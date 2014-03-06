@@ -70,6 +70,11 @@ public:
         return _vel_dot;
     }
 
+    // log data on internal state of the controller. Called at 10Hz
+    void log_data(DataFlash_Class &dataflash, uint8_t msgid);
+
+    enum FlightStage get_flight_stage() { return _flight_stage; }
+
     // return current target airspeed
     float get_target_airspeed(void) const {
         return _TAS_dem / _ahrs.get_EAS2TAS();
