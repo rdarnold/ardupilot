@@ -1797,6 +1797,12 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         // our GCS for failsafe purposes
         if (msg->sysid != plane.g.sysid_my_gcs) break;
         plane.failsafe.last_heartbeat_ms = AP_HAL::millis();
+#if AP_ACS_USE == TRUE
+        //if acs.handle_heartbeat() returns true, then the heartbeat
+        //was from a companion computer, not from a GCS
+        if (! acs.handle_heartbeat(msg)) 
+#endif
+
         break;
     }
 
