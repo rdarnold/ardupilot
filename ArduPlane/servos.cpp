@@ -697,6 +697,22 @@ void Plane::set_servos(void)
         return;
     }
 
+#if AP_ACS_USE == TRUE
+    //TODO: consider using afs.should_crash_vehicle() instead.
+    //In an emergency, kill throtttle.  
+    if (acs.get_kill_throttle() != 0) {
+        gcs_send_text_P(SEVERITY_LOW,PSTR("ACS COMMANDED: killing throttle"));
+        //Old way:
+        //channel_throttle->servo_out = aparm.throttle_min.get();
+        //New way:
+        afs.terminate_vehicle();
+        return;
+
+    }
+#endif
+
+    int16_t last_throttle = channel_throttle->get_radio_out();
+
     // do any transition updates for quadplane
     quadplane.update();    
 

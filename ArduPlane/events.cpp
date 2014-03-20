@@ -8,7 +8,7 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, mode_reason_t re
     gcs_send_text(MAV_SEVERITY_WARNING, "Failsafe. Short event on, ");
     switch(control_mode)
     {
-#if AP_NPS_ENABLE != TRUE
+#if AP_ACS_USE != TRUE
     case MANUAL:
 #endif
     case STABILIZE:
@@ -69,7 +69,7 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
     failsafe.state = fstype;
     switch(control_mode)
     {
-#if AP_NPS_ENALBE != TRUE
+#if AP_ACS_USE != TRUE
     case MANUAL:
 #endif
     case STABILIZE:
@@ -140,7 +140,7 @@ void Plane::failsafe_short_off_event(mode_reason_t reason)
 
 void Plane::low_battery_event(void)
 {
-#if AP_NPS_ENABLE == TRUE
+#if AP_ACS_USE == TRUE
     if (control_mode == MANUAL) return;
 #endif
 
