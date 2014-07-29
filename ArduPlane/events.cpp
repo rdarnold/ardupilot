@@ -13,7 +13,9 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, mode_reason_t re
 #endif
     case STABILIZE:
     case ACRO:
+#if AP_ACS_USE != TRUE
     case FLY_BY_WIRE_A:
+#endif
     case AUTOTUNE:
     case FLY_BY_WIRE_B:
     case CRUISE:
@@ -74,7 +76,9 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
 #endif
     case STABILIZE:
     case ACRO:
+#if AP_ACS_USE != TRUE
     case FLY_BY_WIRE_A:
+#endif
     case AUTOTUNE:
     case FLY_BY_WIRE_B:
     case CRUISE:
@@ -141,7 +145,7 @@ void Plane::failsafe_short_off_event(mode_reason_t reason)
 void Plane::low_battery_event(void)
 {
 #if AP_ACS_USE == TRUE
-    if (control_mode == MANUAL) return;
+    if (control_mode == MANUAL || control_mode == FLY_BY_WIRE_A) return;
 #endif
 
     if (failsafe.low_battery) {
