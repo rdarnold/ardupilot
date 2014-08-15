@@ -76,7 +76,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
     uint32_t now = hal.scheduler->millis();
 
     //always ignore failsafes in MANUAL modes
-    if (mode == ACS_MANUAL || mode == ACS_FLY_BY_WIRE_A) {
+    if (mode == ACS_MANUAL || mode == ACS_FLY_BY_WIRE_B || mode == ACS_FLY_BY_WIRE_A) {
         _current_fs_state = NO_FS;
         return false;
     }
