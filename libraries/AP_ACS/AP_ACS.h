@@ -5,6 +5,7 @@
 #include <AP_Param.h>
 #include <GCS_MAVLink.h>
 #include <AP_TECS.h>
+#include <AP_AHRS_NavEKF.h>
 
 class AP_ACS {
 public:
@@ -65,6 +66,12 @@ public:
     //false if RTL should happen
     bool check(ACS_FlightMode mode, AP_SpdHgtControl::FlightStage flight_stage,
            uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms);
+
+#if AP_AHRS_NAVEKF_AVAILABLE
+    void send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs,
+            mavlink_channel_t chan);
+#endif //AP_AHRS_NAVEKF_AVAILABLE
+
 protected:
     //params
     AP_Int8           _watch_heartbeat;
