@@ -583,6 +583,13 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
         send_ahrs(plane.ahrs);
         break;
 
+    case MSG_GLOBAL_POS_ATT_NED_COV:
+#if AP_ACS_USE == TRUE && AP_AHRS_NAVEKF_AVAILABLE == 1
+        CHECK_PAYLOAD_SIZE(GLOBAL_POS_ATT_NED_COV);
+        acs.send_position_attitude_to_payload(ahrs, chan);
+#endif
+        break;
+
     case MSG_SIMSTATE:
         CHECK_PAYLOAD_SIZE(SIMSTATE);
         plane.send_simstate(chan);
@@ -843,6 +850,7 @@ GCS_MAVLINK_Plane::data_stream_send(void)
     if (plane.gcs_out_of_time) return;
 
     if (stream_trigger(STREAM_EXTENDED_STATUS)) {
+        send_message(MSG_GLOBAL_POS_ATT_NED_COV);
         send_message(MSG_EXTENDED_STATUS1);
         send_message(MSG_EXTENDED_STATUS2);
         send_message(MSG_CURRENT_WAYPOINT);
@@ -1105,6 +1113,28 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 
         case MAV_CMD_START_RX_PAIR:
             result = handle_rc_bind(packet);
+            break;
+        
+        case MAV_CMD_OVERRIDE_GOTO:
+            if (control_mode != AUTO) {
+                result = MAV_RESULT_FAILED;
+            } else {
+                //update the current waypoint
+                
+                if (g.loiter_radius < 0) {
+                    loiter.direction = -1;
+                } else {
+                    loiter.direction = 1;
+                }
+
+                next_WP_loc.lat = (int32_t)(packet.param5 * 1.0e7f); 
+                next_WP_loc.lng = (int32_t)(packet.param6 * 1.0e7f);
+                next_WP_loc.alt = (int32_t)(home.alt + 100.0f*packet.param7);
+                //TODO: terrain following altitude
+
+                result = MAV_RESULT_ACCEPTED;
+            }
+
             break;
 
         case MAV_CMD_NAV_LOITER_UNLIM:
