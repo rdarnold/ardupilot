@@ -72,6 +72,7 @@ enum ap_message {
     MSG_ADSB_VEHICLE,
     MSG_BATTERY_STATUS,
     MSG_AOA_SSA,
+    MSG_GLOBAL_POS_ATT_NED,
     MSG_RETRY_DEFERRED // this must be last
 };
 
