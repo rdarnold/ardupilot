@@ -36,6 +36,7 @@ public:
         BATTERY_CURR_FS,
         BATTERY_VOLT_FS,
         GEOFENCE_SECONDARY_FS,  //fence breach for too long: cut throttle
+        GCS_AUTOLAND_FS,
         THROTTLE_FS,
         NO_FS,
         NO_COMPANION_COMPUTER_FS
@@ -65,12 +66,16 @@ public:
     //false if RTL should happen
     bool check(ACS_FlightMode mode, AP_SpdHgtControl::FlightStage flight_stage,
             uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms,
-            bool fence_breached);
+            bool fence_breached, bool is_flying);
 
 #if AP_AHRS_NAVEKF_AVAILABLE
     void send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs,
             mavlink_channel_t chan);
 #endif //AP_AHRS_NAVEKF_AVAILABLE
+
+    void set_preland_started(bool do_start) { _preland_started = do_start; }
+
+    bool preland_started() { return _preland_started; }
 
 protected:
     //params
@@ -83,6 +88,8 @@ protected:
     FailsafeState       _current_fs_state;
     
     ACS_FlightMode      _previous_mode;
+
+    bool                _preland_started;
 };
 
 #endif // AP_ACS_H__

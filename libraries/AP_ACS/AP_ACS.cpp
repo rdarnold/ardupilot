@@ -38,6 +38,7 @@ AP_ACS::AP_ACS()
     , _fence_breach_time_ms(0)
     , _current_fs_state(NO_FS)
     , _previous_mode(ACS_NONE)
+    , _preland_started(false)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -77,7 +78,7 @@ void AP_ACS::set_kill_throttle(AP_Int8 kt) {
 // check for failsafe conditions IN PRIORITY ORDER
 bool AP_ACS::check(ACS_FlightMode mode, 
         AP_SpdHgtControl::FlightStage flight_stage, uint32_t last_heartbeat_ms,
-        uint32_t last_gps_fix_ms, bool fence_breached) {
+        uint32_t last_gps_fix_ms, bool fence_breached, bool is_flying) {
 
     uint32_t now = hal.scheduler->millis();
 
@@ -95,6 +96,12 @@ bool AP_ACS::check(ACS_FlightMode mode,
     if (flight_stage == AP_SpdHgtControl::FLIGHT_TAKEOFF ||
         flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH || 
         flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL) {
+        
+        //no longer in preland flight phase
+        //(Need this line to re-enable battery, GCS, and payload heartbeat
+        // failsafes after starting a preland)
+        set_preland_started(false);
+
         _current_fs_state = NO_FS;
         return false;
     }
@@ -135,6 +142,12 @@ bool AP_ACS::check(ACS_FlightMode mode,
         }
     }
 
+    //ignore all failsafes except GPS when not flying
+    if (! is_flying) {
+        _current_fs_state = NO_FS;
+        return false;
+    }
+
     //always check secondary fence 2nd.  If the fence has been breached
     //for too long, then we assume the plane's control is such that it
     //can't return.  In that case, the throttle will be cut.
@@ -156,8 +169,23 @@ bool AP_ACS::check(ACS_FlightMode mode,
         _fence_breach_time_ms = 0;
     }
 
+    //Don't trigger any failsafe behavior except GPS and fence if 
+    //we've started landing (but haven't yet started approach)
+    if (preland_started()) {
+        _current_fs_state = NO_FS;
+        return false;
+    }
+
+    //always check loss of GCS comms 3rd (for auto landing)
+    //If we haven't had any contact with the GCS for two minutes, then 
+    //enter failsafe state
+    if (now - last_heartbeat_ms > 120000) {
+        _current_fs_state = GCS_AUTOLAND_FS;
+        return false;
+    }
+
     if (_watch_heartbeat != 0 &&
-        hal.scheduler->millis() - _last_computer_heartbeat_ms > 20000) {
+        now - _last_computer_heartbeat_ms > 20000) {
         _current_fs_state = NO_COMPANION_COMPUTER_FS;
         return false;
     }
