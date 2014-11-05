@@ -35,8 +35,7 @@ public:
         SEC_CONTROL_FS,
         BATTERY_CURR_FS,
         BATTERY_VOLT_FS,
-        GEOFENCE_FS,
-        GCS_FS,
+        GEOFENCE_SECONDARY_FS,  //fence breach for too long: cut throttle
         THROTTLE_FS,
         NO_FS,
         NO_COMPANION_COMPUTER_FS
@@ -65,7 +64,8 @@ public:
     //returns true if everything OK.
     //false if RTL should happen
     bool check(ACS_FlightMode mode, AP_SpdHgtControl::FlightStage flight_stage,
-           uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms);
+            uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms,
+            bool fence_breached);
 
 #if AP_AHRS_NAVEKF_AVAILABLE
     void send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs,
@@ -74,11 +74,11 @@ public:
 
 protected:
     //params
-    AP_Int8           _watch_heartbeat;
+    AP_Int8             _watch_heartbeat;
     AP_Int8             _kill_throttle;
 
-    uint32_t _last_computer_heartbeat_ms;
-
+    uint32_t            _last_computer_heartbeat_ms;
+    uint32_t            _fence_breach_time_ms;
      
     FailsafeState       _current_fs_state;
     

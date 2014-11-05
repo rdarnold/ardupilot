@@ -31,6 +31,7 @@ const AP_Param::GroupInfo AP_ACS::var_info[] PROGMEM = {
 
 AP_ACS::AP_ACS() 
     : _last_computer_heartbeat_ms(0)
+    , _fence_breach_time_ms(0)
     , _current_fs_state(NO_FS)
     , _previous_mode(ACS_NONE)
 {
@@ -53,8 +54,9 @@ bool AP_ACS::handle_heartbeat(mavlink_message_t* msg) {
 }
 
 AP_Int8 AP_ACS::get_kill_throttle() {
-    //always kill throttle in GPS_LONG_FS
-    if (_current_fs_state == GPS_LONG_FS) {
+    //kill throttle in GPS_LONG_FS or GEOFENCE_SECONDARY_FS 
+    if (_current_fs_state == GPS_LONG_FS ||
+        _current_fs_state == GEOFENCE_SECONDARY_FS) {
         AP_Int8 retVal;
         retVal.set(1);
         return retVal;
@@ -69,9 +71,8 @@ void AP_ACS::set_kill_throttle(AP_Int8 kt) {
 
 // check for failsafe conditions IN PRIORITY ORDER
 bool AP_ACS::check(ACS_FlightMode mode, 
-                   AP_SpdHgtControl::FlightStage flight_stage,
-                   uint32_t last_heartbeat_ms,
-                   uint32_t last_gps_fix_ms) {
+        AP_SpdHgtControl::FlightStage flight_stage, uint32_t last_heartbeat_ms,
+        uint32_t last_gps_fix_ms, bool fence_breached) {
 
     uint32_t now = hal.scheduler->millis();
 
@@ -124,6 +125,27 @@ bool AP_ACS::check(ACS_FlightMode mode,
                 return false;
             }
         }
+    }
+
+    //always check secondary fence 2nd.  If the fence has been breached
+    //for too long, then we assume the plane's control is such that it
+    //can't return.  In that case, the throttle will be cut.
+    if (fence_breached) {
+        if (_fence_breach_time_ms == 0) {
+            _fence_breach_time_ms = now;
+        }
+
+        if (now - _fence_breach_time_ms > 20000) {
+            _current_fs_state = GEOFENCE_SECONDARY_FS;
+
+            //actually killing throtte is handled in the
+            //get_kill_throttle method
+            //and the ArduPlane code (see Attitude.pde)
+            return false;
+        }
+    } else {
+        //reset timer
+        _fence_breach_time_ms = 0;
     }
 
     if (_watch_heartbeat != 0 &&
