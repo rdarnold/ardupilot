@@ -1116,8 +1116,18 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
             break;
         
         case MAV_CMD_OVERRIDE_GOTO:
+            //don't let the payload do anything outside AUTO mode
             if (control_mode != AUTO) {
                 result = MAV_RESULT_FAILED;
+
+            //don't let the payload do anything during landing stages
+            } else if (flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH ||
+                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL 
+                    //TODO: Consider GO_AROUND here when new landing code is finished
+                    /* ||
+                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_GO_AROUND */) { 
+               
+                result = MAV_RESULT_FAILED;    
             } else {
                 //update the current waypoint
                 
