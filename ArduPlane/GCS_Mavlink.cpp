@@ -583,9 +583,9 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
         send_ahrs(plane.ahrs);
         break;
 
-    case MSG_GLOBAL_POS_ATT_NED_COV:
+    case MSG_GLOBAL_POS_ATT_NED:
 #if AP_ACS_USE == TRUE && AP_AHRS_NAVEKF_AVAILABLE == 1
-        CHECK_PAYLOAD_SIZE(GLOBAL_POS_ATT_NED_COV);
+        CHECK_PAYLOAD_SIZE(GLOBAL_POS_ATT_NED);
         acs.send_position_attitude_to_payload(ahrs, chan);
 #endif
         break;
@@ -850,7 +850,7 @@ GCS_MAVLINK_Plane::data_stream_send(void)
     if (plane.gcs_out_of_time) return;
 
     if (stream_trigger(STREAM_EXTENDED_STATUS)) {
-        send_message(MSG_GLOBAL_POS_ATT_NED_COV);
+        send_message(MSG_GLOBAL_POS_ATT_NED);
         send_message(MSG_EXTENDED_STATUS1);
         send_message(MSG_EXTENDED_STATUS2);
         send_message(MSG_CURRENT_WAYPOINT);
