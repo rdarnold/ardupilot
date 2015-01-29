@@ -1122,10 +1122,9 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 
             //don't let the payload do anything during landing stages
             } else if (flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH ||
-                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL 
-                    //TODO: Consider GO_AROUND here when new landing code is finished
-                    /* ||
-                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_GO_AROUND */) { 
+                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL /* ||
+                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_GO_AROUND
+                    TODO: Consdier GO_AROUND when it's merged with dev. */) { 
                
                 result = MAV_RESULT_FAILED;    
             } else {
@@ -1143,7 +1142,12 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
                 //TODO: terrain following altitude
 
                 result = MAV_RESULT_ACCEPTED;
-            }
+
+                //log the MAV_CMD_OVERRIDE_GOTO receipt in data flash:
+                char mesg[64];
+                snprintf(mesg, 64, "GOTO T:%d Lat:%d Lon:%d Alt:%d", millis(), next_WP_loc.lat, next_WP_loc.lng, next_WP_loc.alt);
+                DataFlash.Log_Write_Message(mesg);
+            }                 
 
             break;
 
@@ -1477,7 +1481,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
                 }
             }
             break;
-
+        
         case MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES: {
             if (is_equal(packet.param1,1.0f)) {
                 send_autopilot_version(FIRMWARE_VERSION);
