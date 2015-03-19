@@ -181,10 +181,7 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
 
     float pose[4];
     pose[0] = quat.q2; pose[1] = quat.q3; pose[2] = quat.q4; pose[3] = quat.q1;    
-    float covariance[45];
-    //TODO: covariance matrix
-
-    mavlink_msg_global_pos_att_ned_cov_send (chan,
+    mavlink_msg_global_pos_att_ned_send (chan,
                            hal.scheduler->millis(),
                            loc.lat,
                            loc.lng,
@@ -196,8 +193,7 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
                            pose,
                            gyro.x,
                            gyro.y,
-                           gyro.z,
-                           covariance
+                           gyro.z
                            );
 }
 #endif //AP_AHRS_NAVEKF_AVAILABLE
