@@ -32,13 +32,17 @@ const AP_Param::GroupInfo AP_ACS::var_info[] PROGMEM = {
     AP_GROUPEND
 };
 
-AP_ACS::AP_ACS() 
-
+AP_ACS::AP_ACS(const AP_BattMonitor* batt) 
     : _last_computer_heartbeat_ms(0)
     , _fence_breach_time_ms(0)
     , _current_fs_state(NO_FS)
     , _previous_mode(ACS_NONE)
     , _preland_started(false)
+    , _battery(batt)
+    , _do_check_motor(true)
+    , _last_good_motor_time_ms(0)
+    , _motor_fail_workaround_start_ms(0)
+    , _motor_restart_attempts(0)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -48,8 +52,6 @@ bool AP_ACS::handle_heartbeat(mavlink_message_t* msg) {
     mavlink_msg_heartbeat_decode(msg, &packet);
 
     if (packet.type == MAV_TYPE_ONBOARD_CONTROLLER) {
-        //Debug ("Got HB from onboard controller.\n");
-
         _last_computer_heartbeat_ms = hal.scheduler->millis();
 
         return true;
@@ -71,13 +73,14 @@ AP_Int8 AP_ACS::get_kill_throttle() {
     return _kill_throttle;
 }
 
-void AP_ACS::set_kill_throttle(AP_Int8 kt) {
+void AP_ACS::set_kill_throttle(int kt) {
     _kill_throttle = kt;
 }
 
 // check for failsafe conditions IN PRIORITY ORDER
 bool AP_ACS::check(ACS_FlightMode mode, 
-        AP_SpdHgtControl::FlightStage flight_stage, uint32_t last_heartbeat_ms,
+        AP_SpdHgtControl::FlightStage flight_stage, 
+        int16_t thr_out, uint32_t last_heartbeat_ms,
         uint32_t last_gps_fix_ms, bool fence_breached, bool is_flying) {
 
     uint32_t now = hal.scheduler->millis();
@@ -176,7 +179,38 @@ bool AP_ACS::check(ACS_FlightMode mode,
         return false;
     }
 
-    //always check loss of GCS comms 3rd (for auto landing)
+    if (_battery != NULL) {
+        if (_do_check_motor == true && 
+                (thr_out < 30 || _battery->current_amps() >= 2.0f)) {
+            _last_good_motor_time_ms = now;
+            _motor_fail_workaround_start_ms = 0;
+        }
+
+        //2 seconds since last good motor time?
+        if (now - _last_good_motor_time_ms > 2000) {
+            if (_motor_fail_workaround_start_ms == 0) {
+                _do_check_motor = false;
+                _motor_fail_workaround_start_ms = now;
+            }
+
+            //kill throttle for 2.5 seconds to attempt to revive the ESC
+            if (_motor_restart_attempts < 4 &&  
+                now - _motor_fail_workaround_start_ms <= 2500) {
+                if (! get_kill_throttle()) {
+                    set_kill_throttle(1);
+                    _motor_restart_attempts++;
+                }
+            } else {
+                set_kill_throttle(0);
+                _do_check_motor = true;
+            }
+
+            _current_fs_state = MOTOR_FS;
+            return false;
+        }
+    } 
+
+    //next check loss of GCS comms (for auto landing)
     //If we haven't had any contact with the GCS for two minutes, then 
     //enter failsafe state
     if (now - last_heartbeat_ms > 120000) {

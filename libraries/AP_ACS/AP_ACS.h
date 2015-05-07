@@ -6,6 +6,7 @@
 #include <GCS_MAVLink.h>
 #include <AP_TECS.h>
 #include <AP_AHRS_NavEKF.h>
+#include <AP_BattMonitor.h>
 
 class AP_ACS {
 public:
@@ -37,7 +38,7 @@ public:
         BATTERY_VOLT_FS,
         GEOFENCE_SECONDARY_FS,  //fence breach for too long: cut throttle
         GCS_AUTOLAND_FS,
-        THROTTLE_FS,
+        MOTOR_FS,
         NO_FS,
         NO_COMPANION_COMPUTER_FS
     } FailsafeState;
@@ -45,7 +46,7 @@ public:
     // for holding parameters
 	static const struct AP_Param::GroupInfo var_info[];
 
-    AP_ACS();
+    AP_ACS(const AP_BattMonitor* batt);
 
     //returns true if the hearbeat was from a companion computer
     bool handle_heartbeat(mavlink_message_t* msg);
@@ -54,7 +55,7 @@ public:
     AP_Int8 get_kill_throttle();
 
     // essentially setting a bool: if not 0, then DO kill throttle
-    void set_kill_throttle(AP_Int8 kt);
+    void set_kill_throttle(int kt);
 
     FailsafeState get_current_fs_state() { return _current_fs_state; }
 
@@ -65,6 +66,7 @@ public:
     //returns true if everything OK.
     //false if RTL should happen
     bool check(ACS_FlightMode mode, AP_SpdHgtControl::FlightStage flight_stage,
+            int16_t thr_out,
             uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms,
             bool fence_breached, bool is_flying);
 
@@ -90,6 +92,12 @@ protected:
     ACS_FlightMode      _previous_mode;
 
     bool                _preland_started;
+
+    const AP_BattMonitor*     _battery;
+    bool                _do_check_motor;
+    uint32_t            _last_good_motor_time_ms;
+    uint32_t            _motor_fail_workaround_start_ms;
+    int                 _motor_restart_attempts;
 };
 
 #endif // AP_ACS_H__
