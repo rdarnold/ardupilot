@@ -86,6 +86,7 @@
 #include <AP_ServoRelayEvents/AP_ServoRelayEvents.h>
 
 #include <AP_Rally/AP_Rally.h>
+#include <AP_ACS/AP_ACS.h>
 
 #include <AP_OpticalFlow/AP_OpticalFlow.h>     // Optical Flow library
 #include <AP_RSSI/AP_RSSI.h>                   // RSSI Library
@@ -224,6 +225,11 @@ private:
     AP_PitchController pitchController {ahrs, aparm, DataFlash};
     AP_YawController   yawController {ahrs, aparm};
     AP_SteerController steerController {ahrs};
+
+#if AP_ACS_USE == TRUE
+    AP_ACS acs;
+    AP_ACS::FailsafeState previous_fs_state = AP_ACS::NO_FS;
+#endif //AP_ACS_USE
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;
@@ -1011,6 +1017,9 @@ private:
     void compass_save(void);
     void update_logging1(void);
     void update_logging2(void);
+#if AP_ACS_USE == TRUE
+    void acs_check(void);
+#endif //AP_ACS_USE==TRUE
     void terrain_update(void);
     void avoidance_adsb_update(void);
     void update_flight_mode(void);

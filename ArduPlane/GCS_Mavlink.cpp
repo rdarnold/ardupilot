@@ -586,7 +586,7 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
     case MSG_GLOBAL_POS_ATT_NED:
 #if AP_ACS_USE == TRUE && AP_AHRS_NAVEKF_AVAILABLE == 1
         CHECK_PAYLOAD_SIZE(GLOBAL_POS_ATT_NED);
-        acs.send_position_attitude_to_payload(ahrs, chan);
+        plane.acs.send_position_attitude_to_payload(plane.ahrs, chan);
 #endif
         break;
 
@@ -1117,12 +1117,12 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         
         case MAV_CMD_OVERRIDE_GOTO:
             //don't let the payload do anything outside AUTO mode
-            if (control_mode != AUTO) {
+            if (plane.control_mode != AUTO) {
                 result = MAV_RESULT_FAILED;
 
             //don't let the payload do anything during landing stages
-            } else if (flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH ||
-                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL /* ||
+            } else if (plane.flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH ||
+                    plane.flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL /* ||
                     flight_stage == AP_SpdHgtControl::FLIGHT_LAND_GO_AROUND
                     TODO: Consdier GO_AROUND when it's merged with dev. */) { 
                
@@ -1130,23 +1130,23 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
             } else {
                 //update the current waypoint
                 
-                if (g.loiter_radius < 0) {
-                    loiter.direction = -1;
+                if (plane.g.loiter_radius < 0) {
+                    plane.loiter.direction = -1;
                 } else {
-                    loiter.direction = 1;
+                    plane.loiter.direction = 1;
                 }
 
-                next_WP_loc.lat = (int32_t)(packet.param5 * 1.0e7f); 
-                next_WP_loc.lng = (int32_t)(packet.param6 * 1.0e7f);
-                next_WP_loc.alt = (int32_t)(home.alt + 100.0f*packet.param7);
+                plane.next_WP_loc.lat = (int32_t)(packet.param5 * 1.0e7f); 
+                plane.next_WP_loc.lng = (int32_t)(packet.param6 * 1.0e7f);
+                plane.next_WP_loc.alt = (int32_t)(plane.home.alt + 100.0f*packet.param7);
                 //TODO: terrain following altitude
 
                 result = MAV_RESULT_ACCEPTED;
 
                 //log the MAV_CMD_OVERRIDE_GOTO receipt in data flash:
                 char mesg[64];
-                snprintf(mesg, 64, "GOTO T:%d Lat:%d Lon:%d Alt:%d", millis(), next_WP_loc.lat, next_WP_loc.lng, next_WP_loc.alt);
-                DataFlash.Log_Write_Message(mesg);
+                snprintf(mesg, 64, "GOTO T:%d Lat:%d Lon:%d Alt:%d", plane.millis(), plane.next_WP_loc.lat, plane.next_WP_loc.lng, plane.next_WP_loc.alt);
+                plane.DataFlash.Log_Write_Message(mesg);
             }                 
 
             break;
@@ -1844,9 +1844,8 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 #if AP_ACS_USE == TRUE
         //if acs.handle_heartbeat() returns true, then the heartbeat
         //was from a companion computer, not from a GCS
-        if (! acs.handle_heartbeat(msg)) 
+        if (! plane.acs.handle_heartbeat(msg)) 
 #endif
-
         break;
     }
 

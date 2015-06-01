@@ -83,6 +83,9 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(avoidance_adsb_update,  10,    100),
     SCHED_TASK(button_update,           5,    100),
     SCHED_TASK(stats_update,            1,    100),
+#if AP_ACS_USE == TRUE
+    SCHED_TASK(acs_check,               5,   1000), 
+#endif //AP_ACS_ENABLE
 };
 
 /*
@@ -102,6 +105,10 @@ void Plane::setup()
     AP_Param::setup_sketch_defaults();
 
     AP_Notify::flags.failsafe_battery = false;
+
+#if AP_ACS_USE == TRUE
+    previous_fs_state = AP_ACS::NO_FS;
+#endif //AP_ACS_USE==TRUE
 
     rssi.init();
 
@@ -406,6 +413,61 @@ void Plane::compass_save()
         compass.save_offsets();
     }
 }
+
+#if AP_ACS_USE == TRUE
+/* 
+ check for ACS failsafes 
+ */
+void Plane::acs_check(void) {
+    acs.check(AP_ACS::ACS_FlightMode(control_mode), 
+            TECS_controller.get_flight_stage(), failsafe.last_heartbeat_ms,
+            gps.last_fix_time_ms(), geofence_breached());
+
+    AP_ACS::FailsafeState current_fs_state = acs.get_current_fs_state();
+    //always ignore failsafes in manual modes
+    if (control_mode != MANUAL && control_mode != FLY_BY_WIRE_B && control_mode != FLY_BY_WIRE_A) {
+        switch (current_fs_state) {
+            case AP_ACS::GPS_LONG_FS:
+            case AP_ACS::GPS_SHORT_FS:
+                if (control_mode != CIRCLE) {
+                    //send alert to GCS
+                    if (current_fs_state == AP_ACS::GPS_SHORT_FS) {
+                        gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS failsafe: CIRCLE"));
+                    } 
+                    set_mode(CIRCLE);
+                }
+
+                if (current_fs_state == AP_ACS::GPS_LONG_FS) {
+                    //scream Mayday!
+                    gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS lost killing throttle"));
+                }
+                break;
+
+            case AP_ACS::GEOFENCE_SECONDARY_FS:
+                gcs_send_text_P(SEVERITY_HIGH,PSTR("Geofence breach too long. Killing Throttle"));
+                break;
+
+            case AP_ACS::GPS_RECOVERING_FS:
+                if (control_mode == CIRCLE) {
+                    set_mode((FlightMode) acs.get_previous_mode());
+                }
+                break;
+
+            case AP_ACS::NO_COMPANION_COMPUTER_FS:
+                if (previous_fs_state != AP_ACS::NO_COMPANION_COMPUTER_FS) {
+                    set_mode(RTL);
+                    gcs_send_text_P(SEVERITY_HIGH, PSTR("No companion computer"));
+                }
+                break;
+
+            default:
+                break;
+        } //switch
+    }// if not in manual control mode
+
+    previous_fs_state = current_fs_state;
+}
+#endif //AP_ACS_USE
 
 void Plane::terrain_update(void)
 {

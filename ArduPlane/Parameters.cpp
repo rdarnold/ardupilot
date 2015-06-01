@@ -1176,6 +1176,12 @@ const AP_Param::Info Plane::var_info[] = {
     // @Path: ../libraries/AP_Landing/AP_Landing.cpp
     GOBJECT(landing, "LAND_", AP_Landing),
 
+#if AP_ACS_USE == TRUE
+    // @Group: ACS_
+    // @Path: ../libraries/AP_ACS/AP_ACS.cpp
+    GOBJECT(acs,         "ACS_",   AP_ACS),
+#endif
+
     AP_VAREND
 };
 
