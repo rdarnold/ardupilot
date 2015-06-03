@@ -1,14 +1,17 @@
 #include <AP_ACS.h>
-#include <AP_HAL.h>
+//#include <AP_HAL.h>
 
 extern const AP_HAL::HAL& hal;
 
-#if CONFIG_HAL_BOARD == HAL_BOARD_AVR_SITL
- #include <stdio.h>
- # define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
-#else
- # define Debug(fmt, args ...)
-#endif
+//HAL is screwed up at the moment: can't use a string in the preprocessor definition..
+//TODO: Revisit the following after 3DR fixes HAL_BOARD_NAME definition
+//
+//#if HAL_BOARD_NAME == "SITL"
+// #include <stdio.h>
+// # define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+//#else
+// # define Debug(fmt, args ...)
+//#endif
 
 // table of user settable parameters
 const AP_Param::GroupInfo AP_ACS::var_info[] PROGMEM = {
@@ -30,6 +33,7 @@ const AP_Param::GroupInfo AP_ACS::var_info[] PROGMEM = {
 };
 
 AP_ACS::AP_ACS() 
+
     : _last_computer_heartbeat_ms(0)
     , _fence_breach_time_ms(0)
     , _current_fs_state(NO_FS)
@@ -56,6 +60,7 @@ bool AP_ACS::handle_heartbeat(mavlink_message_t* msg) {
 AP_Int8 AP_ACS::get_kill_throttle() {
     //kill throttle in GPS_LONG_FS or GEOFENCE_SECONDARY_FS 
     if (_current_fs_state == GPS_LONG_FS ||
+
         _current_fs_state == GEOFENCE_SECONDARY_FS) {
         AP_Int8 retVal;
         retVal.set(1);
@@ -79,12 +84,14 @@ bool AP_ACS::check(ACS_FlightMode mode,
     //always ignore failsafes in MANUAL modes
     if (mode == ACS_MANUAL || mode == ACS_FLY_BY_WIRE_B || mode == ACS_FLY_BY_WIRE_A) {
         _current_fs_state = NO_FS;
+
         return false;
     }
 
     //The failsafes are ignored during takeoff and landing approach
     //(failsafes triggered near the ground could cause the plane to veer at
     //very low altitude into personnel or property)
+
     if (flight_stage == AP_SpdHgtControl::FLIGHT_TAKEOFF ||
         flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH || 
         flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL) {
@@ -116,6 +123,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
         //GPS is not failing
         //If it was before we have to exit circle mode if we were in it.
         if (_current_fs_state == GPS_LONG_FS 
+
             || _current_fs_state == GPS_SHORT_FS 
             || _current_fs_state == GPS_RECOVERING_FS) {
             
@@ -159,6 +167,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
 
     return true;
 }
+
 
 #if AP_AHRS_NAVEKF_AVAILABLE
 void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_channel_t chan) {
