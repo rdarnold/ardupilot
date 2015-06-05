@@ -22,6 +22,8 @@ public:
     void delay_microseconds(uint16_t us);
     void register_delay_callback(AP_HAL::Proc, uint16_t min_time_ms);
 
+    uint64_t get_start_time_micros64();
+
     void register_timer_process(AP_HAL::MemberProc);
     void register_io_process(AP_HAL::MemberProc);
     void suspend_timer_procs();
@@ -74,5 +76,7 @@ private:
 
     bool _initialized;
     uint64_t _stopped_clock_usec;
+
+    static struct timeval _sketch_start_time;
 };
 #endif  // CONFIG_HAL_BOARD

@@ -13,6 +13,7 @@ public:
     Scheduler() {}
     virtual void     init() = 0;
     virtual void     delay(uint16_t ms) = 0;
+    virtual uint64_t get_start_time_micros64() { return 0L; }
 
     /*
       delay for the given number of microseconds. This needs to be as

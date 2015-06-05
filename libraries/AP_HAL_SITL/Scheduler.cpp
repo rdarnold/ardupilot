@@ -11,7 +11,6 @@ using namespace HALSITL;
 
 extern const AP_HAL::HAL& hal;
 
-
 AP_HAL::Proc Scheduler::_failsafe = nullptr;
 volatile bool Scheduler::_timer_suspended = false;
 volatile bool Scheduler::_timer_event_missed = false;
@@ -24,10 +23,19 @@ AP_HAL::MemberProc Scheduler::_io_proc[SITL_SCHEDULER_MAX_TIMER_PROCS] = {nullpt
 uint8_t Scheduler::_num_io_procs = 0;
 bool Scheduler::_in_io_proc = false;
 
+struct timeval Scheduler::_sketch_start_time;
+
 Scheduler::Scheduler(SITL_State *sitlState) :
     _sitlState(sitlState),
     _stopped_clock_usec(0)
 {
+    gettimeofday(&_sketch_start_time,NULL);
+}
+
+uint64_t Scheduler::get_start_time_micros64() 
+{
+    return (1.0e6 * _sketch_start_time.tv_sec +
+                    _sketch_start_time.tv_usec);
 }
 
 void Scheduler::init()
