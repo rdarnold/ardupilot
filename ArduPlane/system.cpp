@@ -589,6 +589,15 @@ void Plane::check_long_failsafe()
         } else if (g.gcs_heartbeat_fs_enabled == GCS_FAILSAFE_HEARTBEAT &&
                    failsafe.last_heartbeat_ms != 0 &&
                    (tnow - failsafe.last_heartbeat_ms) > g.long_fs_timeout*1000) {
+#if AP_ACS_USE == TRUE
+            //Don't trigger the GCS heartbeat failsafe if on the ground
+            //or if we've started landing
+            if ( (! is_flying()) || acs.preland_started() ||
+                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH ||
+                    flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL) {
+                return;
+            }
+#endif
             failsafe_long_on_event(FAILSAFE_GCS, MODE_REASON_GCS_FAILSAFE);
         } else if (g.gcs_heartbeat_fs_enabled == GCS_FAILSAFE_HB_RSSI && 
                    gcs().chan(0).last_radio_status_remrssi_ms != 0 &&

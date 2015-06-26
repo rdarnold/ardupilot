@@ -421,7 +421,7 @@ void Plane::compass_save()
 void Plane::acs_check(void) {
     acs.check(AP_ACS::ACS_FlightMode(control_mode), 
             TECS_controller.get_flight_stage(), failsafe.last_heartbeat_ms,
-            gps.last_fix_time_ms(), geofence_breached());
+            gps.last_fix_time_ms(), geofence_breached(), is_flying());
 
     AP_ACS::FailsafeState current_fs_state = acs.get_current_fs_state();
     //always ignore failsafes in manual modes
@@ -453,7 +453,21 @@ void Plane::acs_check(void) {
                 }
                 break;
 
+            case AP_ACS::GCS_AUTOLAND_FS:
+                //the conditional ensure an edge triggered event
+                if (previous_fs_state != AP_ACS::GCS_AUTOLAND_FS) {
+                    //try to tell GCS what we're doing (it may not be able to hear us)
+                    gcs_send_text_P(SEVERITY_HIGH,PSTR("No contact with GCS for too long: auto-landing."));
+
+                    //start landing if not already
+                    if (! jump_to_landing_sequence()) {
+                        gcs_send_text_P(SEVERITY_HIGH,PSTR("Failed to start emergency land sequence!!"));
+                    }
+                }
+                break;
+
             case AP_ACS::NO_COMPANION_COMPUTER_FS:
+                //the conditional ensure an edge triggered event
                 if (previous_fs_state != AP_ACS::NO_COMPANION_COMPUTER_FS) {
                     set_mode(RTL);
                     gcs_send_text_P(SEVERITY_HIGH, PSTR("No companion computer"));

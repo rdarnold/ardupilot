@@ -136,6 +136,13 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
         break;
 
     case MAV_CMD_DO_LAND_START:
+        // handled in landing.reset()
+
+#if AP_ACS_USE == TRUE
+        //ensure go around hasn't been set
+        auto_state.commanded_go_around = false;
+        plane.acs.set_preland_started(true);
+#endif
         break;
 
     case MAV_CMD_DO_FENCE_ENABLE:

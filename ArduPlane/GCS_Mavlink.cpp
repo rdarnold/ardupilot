@@ -1660,6 +1660,13 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 
     case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
     {
+#if AP_ACS_USE == TRUE
+        //When the user sets a waypoint explicitly, assume they may have asked 
+        //to leave a preland flight phase.  This needs to happen to re-enable
+        //battery, GCS, and payload heartbeat failsafes if the user had
+        //started pre-land phase.
+        plane.acs.set_preland_started(false);
+#endif
         // disable cross-track when user asks for WP change, to
         // prevent unexpected flight paths
         plane.auto_state.next_wp_no_crosstrack = true;
