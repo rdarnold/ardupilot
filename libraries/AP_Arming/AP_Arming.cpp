@@ -182,12 +182,17 @@ bool AP_Arming::ins_checks(bool report)
             }
             return false;
         }
+       
+#if 0 //ACS doesn't use the overzealous AHRS check
+        //NOTE (Michael Day): this check CHANGED circa Oct 2015! May be OK 
+        //to use this accelerometers check, -- ARSENL has never used it.
         if (!ins.get_accel_health_all()) {
             if (report) {
                 GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_CRITICAL, "PreArm: Accels not healthy");
             }
             return false;
         }
+#endif
         if (!ins.accel_calibrated_ok_all()) {
             if (report) {
                 GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_CRITICAL, "PreArm: 3D Accel calibration needed");
@@ -203,6 +208,7 @@ bool AP_Arming::ins_checks(bool report)
             return false;
         }
 
+#if 0 //ACS doesn't use the overzelous accelerometer check
         // check all accelerometers point in roughly same direction
         if (ins.get_accel_count() > 1) {
             const Vector3f &prime_accel_vec = ins.get_accel();
@@ -238,6 +244,7 @@ bool AP_Arming::ins_checks(bool report)
                 }
             }
         }
+#endif
 
         // check all gyros are giving consistent readings
         if (ins.get_gyro_count() > 1) {
