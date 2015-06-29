@@ -22,6 +22,9 @@ const AP_HAL::HAL& hal = AP_HAL::get_HAL();
  */
 Plane::Plane(void)
     : DataFlash{FIRMWARE_STRING}
+#if AP_ACS_USE
+    , acs(&battery)
+#endif
 {
     // C++11 doesn't allow in-class initialisation of bitfields
     auto_state.takeoff_complete = true;
