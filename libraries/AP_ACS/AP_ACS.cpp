@@ -238,16 +238,21 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
     Matrix3f mat;
     Vector3f eulers;
     Quaternion quat;
-    Vector3f posNED;
     Vector3f velNED;
     Vector3f gyro;
 
-    ahrs.get_NavEKF().getEulerAngles(eulers);
+    if (ahrs.get_NavEKF().healthy()) {
+        ahrs.get_NavEKF().getEulerAngles(eulers);
+        ahrs.get_NavEKF().getVelNED(velNED);
+        ahrs.get_NavEKF().getLLH(loc);
+    } else {
+        ahrs.get_dcm_matrix().to_euler(&eulers.x, &eulers.y, &eulers.z);
+        velNED = ahrs.get_gps().velocity();
+        loc = ahrs.get_gps().location();
+    }
+    
     quat.from_euler(eulers.x, eulers.y, eulers.z);
 
-    ahrs.get_NavEKF().getVelNED(velNED);
-    ahrs.get_NavEKF().getLLH(loc);
-    ahrs.get_NavEKF().getPosNED(posNED);
     gyro = ahrs.get_gyro();
 
     float pose[4];
