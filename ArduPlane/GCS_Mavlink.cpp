@@ -1851,7 +1851,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 #if AP_ACS_USE == TRUE
         //if acs.handle_heartbeat() returns true, then the heartbeat
         //was from a companion computer, not from a GCS
-        if (! plane.acs.handle_heartbeat(msg)) 
+        if (plane.acs.handle_heartbeat(msg)) break;
 #endif
         break;
     }
