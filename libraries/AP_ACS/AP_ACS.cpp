@@ -181,13 +181,13 @@ bool AP_ACS::check(ACS_FlightMode mode,
 
     if (_battery != NULL) {
         if (_do_check_motor == true && 
-                (thr_out < 30 || _battery->current_amps() >= 2.0f)) {
+                (thr_out < 60 || _battery->current_amps() >= 2.0f)) {
             _last_good_motor_time_ms = now;
             _motor_fail_workaround_start_ms = 0;
         }
 
-        //2 seconds since last good motor time?
-        if (now - _last_good_motor_time_ms > 2000) {
+        //5 seconds since last good motor time?
+        if (now - _last_good_motor_time_ms > 5000) {
             if (_motor_fail_workaround_start_ms == 0) {
                 _do_check_motor = false;
                 _motor_fail_workaround_start_ms = now;
