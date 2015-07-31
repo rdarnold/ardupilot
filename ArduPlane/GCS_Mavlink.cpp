@@ -586,7 +586,8 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
     case MSG_GLOBAL_POS_ATT_NED:
 #if AP_ACS_USE == TRUE && AP_AHRS_NAVEKF_AVAILABLE == 1
         CHECK_PAYLOAD_SIZE(GLOBAL_POS_ATT_NED);
-        plane.acs.send_position_attitude_to_payload(plane.ahrs, chan);
+        plane.acs.send_position_attitude_to_payload(plane.ahrs, chan,
+                plane.DataFlash, plane.is_flying());
 #endif
         break;
 
