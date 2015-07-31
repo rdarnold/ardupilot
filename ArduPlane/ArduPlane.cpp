@@ -430,12 +430,12 @@ void Plane::acs_check(void) {
         switch (current_fs_state) {
             case AP_ACS::GPS_LONG_FS:
             case AP_ACS::GPS_SHORT_FS:
-                if (control_mode != CIRCLE) {
+                if (control_mode != LOITER) {
                     //send alert to GCS
                     if (current_fs_state == AP_ACS::GPS_SHORT_FS) {
-                        gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS failsafe: CIRCLE"));
+                        gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS failsafe: LOITER"));
                     } 
-                    set_mode(CIRCLE);
+                    set_mode(LOITER);
                 }
 
                 if (current_fs_state == AP_ACS::GPS_LONG_FS) {
@@ -449,7 +449,7 @@ void Plane::acs_check(void) {
                 break;
 
             case AP_ACS::GPS_RECOVERING_FS:
-                if (control_mode == CIRCLE) {
+                if (control_mode == LOITER) {
                     set_mode((FlightMode) acs.get_previous_mode());
                 }
                 break;
