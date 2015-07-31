@@ -137,7 +137,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
             || _current_fs_state == GPS_SHORT_FS 
             || _current_fs_state == GPS_RECOVERING_FS) {
             
-            if (mode == ACS_CIRCLE) {
+            if (mode == ACS_LOITER) {
                 //signal that we need to go back to previous flight mode
                 _current_fs_state = GPS_RECOVERING_FS;
                 return false;
