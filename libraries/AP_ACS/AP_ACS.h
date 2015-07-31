@@ -7,6 +7,7 @@
 #include <AP_TECS.h>
 #include <AP_AHRS_NavEKF.h>
 #include <AP_BattMonitor.h>
+#include <DataFlash.h>
 
 class AP_ACS {
 public:
@@ -72,7 +73,7 @@ public:
 
 #if AP_AHRS_NAVEKF_AVAILABLE
     void send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs,
-            mavlink_channel_t chan);
+            mavlink_channel_t chan, DataFlash_Class &df, bool is_flying);
 #endif //AP_AHRS_NAVEKF_AVAILABLE
 
     void set_preland_started(bool do_start) { _preland_started = do_start; }
@@ -98,6 +99,8 @@ protected:
     uint32_t            _last_good_motor_time_ms;
     uint32_t            _motor_fail_workaround_start_ms;
     int                 _motor_restart_attempts;
+
+    uint32_t            _last_log_time;
 };
 
 #endif // AP_ACS_H__

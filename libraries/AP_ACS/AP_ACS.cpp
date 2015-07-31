@@ -43,6 +43,7 @@ AP_ACS::AP_ACS(const AP_BattMonitor* batt)
     , _last_good_motor_time_ms(0)
     , _motor_fail_workaround_start_ms(0)
     , _motor_restart_attempts(0)
+    , _last_log_time(0)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -233,23 +234,27 @@ bool AP_ACS::check(ACS_FlightMode mode,
 
 
 #if AP_AHRS_NAVEKF_AVAILABLE
-void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_channel_t chan) {
+void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_channel_t chan, DataFlash_Class &df, bool is_flying) {
     struct Location loc;
     const struct Location home = ahrs.get_home();
     Matrix3f mat;
     Vector3f eulers;
     Quaternion quat;
     Vector3f velNED;
-    Vector3f gyro;
+    Vector3f gyro;    
+    uint8_t ekf_state = 0; //for dataflash logging
+    uint32_t now = hal.scheduler->millis();
 
     if (ahrs.get_NavEKF().healthy()) {
         ahrs.get_NavEKF().getEulerAngles(eulers);
         ahrs.get_NavEKF().getVelNED(velNED);
         ahrs.get_NavEKF().getLLH(loc);
+        ekf_state = 1;
     } else {
         ahrs.get_dcm_matrix().to_euler(&eulers.x, &eulers.y, &eulers.z);
         velNED = ahrs.get_gps().velocity();
         loc = ahrs.get_gps().location();
+        ekf_state = 0;
     }
     
     quat.from_euler(eulers.x, eulers.y, eulers.z);
@@ -272,6 +277,31 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
                            gyro.y,
                            gyro.z
                            );
+
+    //log at a slower rate than we send to keep disk I/O down
+    //and only log when flying
+    if (is_flying && now - _last_log_time > 333) {
+        //Log sending of message to dataflash
+        struct log_payload_pose pkt = {
+            LOG_PACKET_HEADER_INIT(LOG_PAYLOAD_POSE_MSG),
+            time_us     : hal.scheduler->micros64(),
+            ekf_state   : ekf_state, 
+            lat         : loc.lat,
+            lng         : loc.lng,
+            alt         : loc.alt,
+            rel_alt     : (loc.alt - home.alt),
+            vel_x       : velNED.x*100.f,
+            vel_y       : velNED.y*100.f,
+            vel_z       : velNED.z*100.f,
+            pose_0      : pose[0],
+            pose_1      : pose[1],
+            pose_2      : pose[2],
+            pose_3      : pose[3]
+        };
+        df.WriteBlock(&pkt, sizeof(pkt));
+
+        _last_log_time = now;
+    }
 }
 #endif //AP_AHRS_NAVEKF_AVAILABLE
 
