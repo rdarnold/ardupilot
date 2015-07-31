@@ -217,6 +217,25 @@ struct PACKED log_POS {
     float rel_origin_alt;
 };
 
+//#if AP_ACS_USE == TRUE
+struct PACKED log_payload_pose {
+        LOG_PACKET_HEADER;
+        uint64_t    time_us;
+        uint8_t     ekf_state;
+        int32_t     lat;
+        int32_t     lng;
+        int32_t     alt;
+        int32_t     rel_alt;
+        float       vel_x;
+        float       vel_y;
+        float       vel_z;
+        float       pose_0;  //quaternion
+        float       pose_1;
+        float       pose_2;
+        float       pose_3;
+};
+//#endif //AP_ACS_USE
+
 struct PACKED log_POWR {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -946,6 +965,8 @@ Format characters in the format string for binary log messages
       "POS","QLLfff","TimeUS,Lat,Lng,Alt,RelHomeAlt,RelOriginAlt" }, \
     { LOG_SIMSTATE_MSG, sizeof(log_AHRS), \
       "SIM","QccCfLLffff","TimeUS,Roll,Pitch,Yaw,Alt,Lat,Lng,Q1,Q2,Q3,Q4" }, \
+    { LOG_PAYLOAD_POSE_MSG, sizeof(log_payload_pose), \
+      "PYLD","QBLLeefffffff",     "TimeUS,EkfOK,Lat,Lng,Alt,RelAlt,VelX,VelY,VelZ,Ps0,Ps1,Ps2,Ps3" }, \
     { LOG_NKF1_MSG, sizeof(log_EKF1), \
       "NKF1","QccCfffffffccc","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ" }, \
     { LOG_NKF2_MSG, sizeof(log_NKF2), \
@@ -1214,6 +1235,10 @@ enum LogMessages {
     LOG_VISUALODOM_MSG,
     LOG_AOA_SSA_MSG,
     LOG_BEACON_MSG,
+//#if AP_ACS_USE == TRUE
+    LOG_PAYLOAD_POSE_MSG, 
+//#endif //AP_ACS_USE == TRUE
+
 };
 
 enum LogOriginType {
