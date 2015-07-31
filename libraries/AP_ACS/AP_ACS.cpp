@@ -174,7 +174,8 @@ bool AP_ACS::check(ACS_FlightMode mode,
 
     //Don't trigger any failsafe behavior except GPS and fence if 
     //we've started landing (but haven't yet started approach)
-    if (preland_started()) {
+    //UNLESS: this is a failsafe induced landing.
+    if (preland_started() && _current_fs_state != GCS_AUTOLAND_FS) {
         _current_fs_state = NO_FS;
         return false;
     }
