@@ -438,14 +438,18 @@ void Plane::acs_check(void) {
                     set_mode(LOITER);
                 }
 
-                if (current_fs_state == AP_ACS::GPS_LONG_FS) {
+                if (current_fs_state == AP_ACS::GPS_LONG_FS &&
+                        previous_fs_state != AP_ACS::GPS_LONG_FS) {
                     //scream Mayday!
+                    printf("previous_fs_state %d \n", previous_fs_state);
                     gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS lost killing throttle"));
                 }
                 break;
 
             case AP_ACS::GEOFENCE_SECONDARY_FS:
-                gcs_send_text_P(SEVERITY_HIGH,PSTR("Geofence breach too long. Killing Throttle"));
+                if (previous_fs_state != AP_ACS::GEOFENCE_SECONDARY_FS) {
+                    gcs_send_text_P(SEVERITY_HIGH,PSTR("Geofence breach too long. Killing Throttle"));
+                }
                 break;
 
             case AP_ACS::GPS_RECOVERING_FS:
