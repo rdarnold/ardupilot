@@ -64,6 +64,13 @@ public:
     //the mode we were in before the failsafe triggered
     ACS_FlightMode get_previous_mode() { return _previous_mode; }
 
+    //Retrun true if the throttle kill notify flag has been sent.
+    //The intent of this method is to avoid spamming 
+    //  "I'm killing the throttle" msgs. (send just 1 message)
+    bool get_throttle_kill_notified();
+
+    void set_throttle_kill_notified(bool tkn);
+
     //returns true if everything OK.
     //false if RTL should happen
     bool check(ACS_FlightMode mode, AP_SpdHgtControl::FlightStage flight_stage,
@@ -93,9 +100,9 @@ protected:
     ACS_FlightMode      _previous_mode;
 
     bool                _preland_started;
+    bool                _thr_kill_notified;
 
     const AP_BattMonitor*     _battery;
-    bool                _do_check_motor;
     uint32_t            _last_good_motor_time_ms;
     uint32_t            _motor_fail_workaround_start_ms;
     int                 _motor_restart_attempts;

@@ -38,8 +38,8 @@ AP_ACS::AP_ACS(const AP_BattMonitor* batt)
     , _current_fs_state(NO_FS)
     , _previous_mode(ACS_NONE)
     , _preland_started(false)
+    , _thr_kill_notified(false)
     , _battery(batt)
-    , _do_check_motor(true)
     , _last_good_motor_time_ms(0)
     , _motor_fail_workaround_start_ms(0)
     , _motor_restart_attempts(0)
@@ -76,6 +76,22 @@ AP_Int8 AP_ACS::get_kill_throttle() {
 
 void AP_ACS::set_kill_throttle(int kt) {
     _kill_throttle = kt;
+
+    //we've stopped notifying about a kill throttle if we're no 
+    //longer killing the throttle.
+    if (_kill_throttle == false) {
+        _thr_kill_notified = false;
+    }
+}
+
+//Retrun true if the throttle kill notify flag has been sent.
+//The intent of this method is to avoid spamming "I'm killing throttle" msgs.
+bool AP_ACS::get_throttle_kill_notified() {
+    return _thr_kill_notified;
+}
+
+void AP_ACS::set_throttle_kill_notified(bool tkn) {
+    _thr_kill_notified = tkn;
 }
 
 // check for failsafe conditions IN PRIORITY ORDER
@@ -182,7 +198,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
     }
 
     if (_battery != NULL) {
-        if (_do_check_motor == true && 
+        if (get_kill_throttle() == 0 && 
                 (thr_out < 60 || _battery->current_amps() >= 2.0f)) {
             _last_good_motor_time_ms = now;
             _motor_fail_workaround_start_ms = 0;
@@ -191,7 +207,6 @@ bool AP_ACS::check(ACS_FlightMode mode,
         //5 seconds since last good motor time?
         if (now - _last_good_motor_time_ms > 5000) {
             if (_motor_fail_workaround_start_ms == 0) {
-                _do_check_motor = false;
                 _motor_fail_workaround_start_ms = now;
             }
 
@@ -202,9 +217,9 @@ bool AP_ACS::check(ACS_FlightMode mode,
                     set_kill_throttle(1);
                     _motor_restart_attempts++;
                 }
-            } else {
+            } else if (get_kill_throttle() != 0) {
                 set_kill_throttle(0);
-                _do_check_motor = true;
+                _motor_fail_workaround_start_ms = 0;
             }
 
             _current_fs_state = MOTOR_FS;
