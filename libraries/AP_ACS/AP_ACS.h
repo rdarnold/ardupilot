@@ -2,12 +2,12 @@
 #define AP_ACS_H__
 /* Naval Postgraduate School Aerial Combat Swarms module */
 
-#include <AP_Param.h>
-#include <GCS_MAVLink.h>
-#include <AP_TECS.h>
-#include <AP_AHRS_NavEKF.h>
-#include <AP_BattMonitor.h>
-#include <DataFlash.h>
+#include <AP_Param/AP_Param.h>
+#include <GCS_MAVLink/GCS_MAVLink.h>
+#include <AP_TECS/AP_TECS.h>
+#include <AP_AHRS/AP_AHRS_NavEKF.h>
+#include <AP_BattMonitor/AP_BattMonitor.h>
+#include <DataFlash/DataFlash.h>
 
 class AP_ACS {
 public:
