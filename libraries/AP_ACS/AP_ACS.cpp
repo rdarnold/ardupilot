@@ -198,10 +198,9 @@ bool AP_ACS::check(ACS_FlightMode mode,
     }
 
     if (_battery != NULL) {
-        if (get_kill_throttle() == 0 && 
+        if (_motor_fail_workaround_start_ms == 0 && 
                 (thr_out < 60 || _battery->current_amps() >= 2.0f)) {
             _last_good_motor_time_ms = now;
-            _motor_fail_workaround_start_ms = 0;
         }
 
         //5 seconds since last good motor time?
@@ -217,7 +216,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
                     set_kill_throttle(1);
                     _motor_restart_attempts++;
                 }
-            } else if (get_kill_throttle() != 0) {
+            } else if (_motor_fail_workaround_start_ms != 0) {
                 set_kill_throttle(0);
                 _motor_fail_workaround_start_ms = 0;
             }
