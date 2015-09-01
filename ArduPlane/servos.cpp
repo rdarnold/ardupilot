@@ -707,14 +707,19 @@ void Plane::set_servos(void)
 #if AP_ACS_USE == TRUE
     //TODO: consider using afs.should_crash_vehicle() instead.
     //In an emergency, kill throtttle.  
-    if (acs.get_kill_throttle() != 0 && ! acs.get_throttle_kill_notified()) {
-            gcs_send_text_P(SEVERITY_HIGH,PSTR("ACS COMMANDED: killing throttle"));
-            acs.set_throttle_kill_notified(true);
+    if (acs.get_kill_throttle() != 0) {
             //Old way:
             //channel_throttle->servo_out = aparm.throttle_min.get();
             //New way:
             afs.terminate_vehicle();
             return;
+            
+            if (! acs.get_throttle_kill_notified()) {
+            gcs_send_text_P(SEVERITY_HIGH,PSTR("ACS COMMANDED: killing throttle"));
+            acs.set_throttle_kill_notified(true);
+            }
+    } else {
+        acs.set_throttle_kill_notified(false);
     }
 #endif
 
