@@ -1,4 +1,7 @@
 #include <AP_ACS/AP_ACS.h>
+
+#include <AP_Notify/AP_Notify.h>
+
 //#include <AP_HAL/AP_HAL.h>
 
 extern const AP_HAL::HAL& hal;
@@ -198,6 +201,13 @@ bool AP_ACS::check(ACS_FlightMode mode,
     }
 
     if (_battery != NULL) {
+        //don't use motor failsafe if battery failsafe is active
+        if (AP_Notify::flags.failsafe_battery) {
+            _last_good_motor_time_ms = now;
+        }
+
+        //is throttle is above 60 and current is below 2 and
+        //the failsafe workaround not currently active?
         if (_motor_fail_workaround_start_ms == 0 && 
                 (thr_out < 60 || _battery->current_amps() >= 2.0f)) {
             _last_good_motor_time_ms = now;
