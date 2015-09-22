@@ -433,7 +433,7 @@ void Plane::acs_check(void) {
                 if (control_mode != LOITER) {
                     //send alert to GCS
                     if (current_fs_state == AP_ACS::GPS_SHORT_FS) {
-                        gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS failsafe: LOITER"));
+                        gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("GPS failsafe: LOITER"));
                     } 
                     set_mode(LOITER);
                 }
@@ -442,13 +442,13 @@ void Plane::acs_check(void) {
                         previous_fs_state != AP_ACS::GPS_LONG_FS) {
                     //scream Mayday!
                     printf("previous_fs_state %d \n", previous_fs_state);
-                    gcs_send_text_P(SEVERITY_HIGH,PSTR("GPS lost killing throttle"));
+                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("GPS lost killing throttle"));
                 }
                 break;
 
             case AP_ACS::GEOFENCE_SECONDARY_FS:
                 if (previous_fs_state != AP_ACS::GEOFENCE_SECONDARY_FS) {
-                    gcs_send_text_P(SEVERITY_HIGH,PSTR("Geofence breach too long. Killing Throttle"));
+                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Geofence breach too long. Killing Throttle"));
                 }
                 break;
 
@@ -462,11 +462,11 @@ void Plane::acs_check(void) {
                 //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::GCS_AUTOLAND_FS) {
                     //try to tell GCS what we're doing (it may not be able to hear us)
-                    gcs_send_text_P(SEVERITY_HIGH,PSTR("No contact with GCS for too long: auto-landing."));
+                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("No contact with GCS for too long: auto-landing."));
 
                     //start landing if not already
                     if (! jump_to_landing_sequence()) {
-                        gcs_send_text_P(SEVERITY_HIGH,PSTR("Failed to start emergency land sequence!!"));
+                        gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Failed to start emergency land sequence!!"));
                     }
                 }
                 break;
@@ -474,7 +474,7 @@ void Plane::acs_check(void) {
             case AP_ACS::MOTOR_FS:
                  //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::MOTOR_FS) {
-                    gcs_send_text_P(SEVERITY_HIGH,PSTR("Motor failure detected."));
+                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Motor failure detected."));
                     set_mode(RTL);
                 }
                 break;
@@ -483,7 +483,7 @@ void Plane::acs_check(void) {
                 //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::NO_COMPANION_COMPUTER_FS) {
                     set_mode(RTL);
-                    gcs_send_text_P(SEVERITY_HIGH, PSTR("No companion computer"));
+                    gcs_send_text_P(MAV_SEVERITY_CRITICAL, PSTR("No companion computer"));
                 }
                 break;
 
