@@ -101,6 +101,7 @@ protected:
 
     bool                _preland_started;
     bool                _thr_kill_notified;
+    bool                _payload_failsafe_already_fired;
 
     const AP_BattMonitor*     _battery;
     uint32_t            _last_good_motor_time_ms;

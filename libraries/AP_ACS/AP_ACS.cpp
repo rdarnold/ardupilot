@@ -42,6 +42,7 @@ AP_ACS::AP_ACS(const AP_BattMonitor* batt)
     , _previous_mode(ACS_NONE)
     , _preland_started(false)
     , _thr_kill_notified(false)
+    , _payload_failsafe_already_fired(false)
     , _battery(batt)
     , _last_good_motor_time_ms(0)
     , _motor_fail_workaround_start_ms(0)
@@ -246,10 +247,17 @@ bool AP_ACS::check(ACS_FlightMode mode,
 
     if (_watch_heartbeat != 0 &&
         now - _last_computer_heartbeat_ms > 20000) {
-        _current_fs_state = NO_COMPANION_COMPUTER_FS;
-        return false;
+        //edge triggered when companion computer heartbeat lost
+        if (! _payload_failsafe_already_fired) {
+            _current_fs_state = NO_COMPANION_COMPUTER_FS;
+            _payload_failsafe_already_fired = true;
+            return false;
+        } 
+    } else {
+        //if the hearbeat comes back, reset this flag
+        _payload_failsafe_already_fired = false;
     }
-
+  
     //if we made it here then no failsafes are in effect.
     _current_fs_state = NO_FS;
 
