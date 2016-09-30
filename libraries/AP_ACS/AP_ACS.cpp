@@ -17,7 +17,7 @@ extern const AP_HAL::HAL& hal;
 //#endif
 
 // table of user settable parameters
-const AP_Param::GroupInfo AP_ACS::var_info[] PROGMEM = {
+const AP_Param::GroupInfo AP_ACS::var_info[] = {
     // @Param: WATCH_HB
     // @DisplayName: Watch the payload heartbeat
     // @Description: If this setting is not 0 then the plane will RTL if 
@@ -57,7 +57,7 @@ bool AP_ACS::handle_heartbeat(mavlink_message_t* msg) {
     mavlink_msg_heartbeat_decode(msg, &packet);
 
     if (packet.type == MAV_TYPE_ONBOARD_CONTROLLER) {
-        _last_computer_heartbeat_ms = hal.scheduler->millis();
+        _last_computer_heartbeat_ms = AP_HAL::millis();
 
         return true;
     }
@@ -104,7 +104,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
         int16_t thr_out, uint32_t last_heartbeat_ms,
         uint32_t last_gps_fix_ms, bool fence_breached, bool is_flying) {
 
-    uint32_t now = hal.scheduler->millis();
+    uint32_t now = AP_HAL::millis();
 
     //always ignore failsafes in MANUAL modes
     if (mode == ACS_MANUAL || mode == ACS_FLY_BY_WIRE_B || mode == ACS_FLY_BY_WIRE_A) {
@@ -133,7 +133,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
     //always check loss of GPS first
     if ((now - last_gps_fix_ms) > 20000) {
         if (_current_fs_state != GPS_LONG_FS) {
-            hal.console->println_P(PSTR("20 sec GPS FS"));
+            hal.console->println("20 sec GPS FS");
         }
 
         _current_fs_state = GPS_LONG_FS;
@@ -144,7 +144,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
         return false;
     } else if ((now - last_gps_fix_ms) >= 5000) {
         if (_current_fs_state != GPS_SHORT_FS) {
-            hal.console->println_P(PSTR("5 sec GPS FS"));
+            hal.console->println("5 sec GPS FS");
             _previous_mode = mode;
         }
 
@@ -275,7 +275,7 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
     Vector3f velNED;
     Vector3f gyro;    
     uint8_t ekf_state = 0; //for dataflash logging
-    uint32_t now = hal.scheduler->millis();
+    uint32_t now = AP_HAL::millis();
 
     if (ahrs.get_NavEKF().healthy()) {
         ahrs.get_NavEKF().getEulerAngles(eulers);
@@ -283,7 +283,7 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
         ahrs.get_NavEKF().getLLH(loc);
         ekf_state = 1;
     } else {
-        ahrs.get_dcm_matrix().to_euler(&eulers.x, &eulers.y, &eulers.z);
+        ahrs.get_rotation_body_to_ned().to_euler(&eulers.x, &eulers.y, &eulers.z);
         velNED = ahrs.get_gps().velocity();
         loc = ahrs.get_gps().location();
         ekf_state = 0;
@@ -296,7 +296,7 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
     float pose[4];
     pose[0] = quat.q2; pose[1] = quat.q3; pose[2] = quat.q4; pose[3] = quat.q1;    
     mavlink_msg_global_pos_att_ned_send (chan,
-                           hal.scheduler->millis(),
+                           AP_HAL::millis(),
                            loc.lat,
                            loc.lng,
                            loc.alt,
@@ -316,7 +316,7 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
         //Log sending of message to dataflash
         struct log_payload_pose pkt = {
             LOG_PACKET_HEADER_INIT(LOG_PAYLOAD_POSE_MSG),
-            time_us     : hal.scheduler->micros64(),
+            time_us     : AP_HAL::micros64(),
             ekf_state   : ekf_state, 
             lat         : loc.lat,
             lng         : loc.lng,
