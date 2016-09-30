@@ -160,11 +160,11 @@ void Plane::low_battery_event(void)
     if (flight_stage != AP_Vehicle::FixedWing::FLIGHT_LAND) {
 #if AP_ACS_USE == TRUE
         if (! acs.preland_started()) {
-            gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Battery low: auto-landing."));
+            gcs_send_text(MAV_SEVERITY_CRITICAL,"Battery low: auto-landing.");
 
             //start landing if not already (ACS-specific behavior -- land vice RTL)
             if (! jump_to_landing_sequence()) {
-                gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Failed to start emergency land sequence!!"));
+                gcs_send_text(MAV_SEVERITY_CRITICAL,"Failed to start emergency land sequence!!");
             }
         }
 #else

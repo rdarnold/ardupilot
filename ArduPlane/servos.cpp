@@ -715,8 +715,9 @@ void Plane::set_servos(void)
             return;
             
             if (! acs.get_throttle_kill_notified()) {
-            gcs_send_text_P(SEVERITY_HIGH,PSTR("ACS COMMANDED: killing throttle"));
-            acs.set_throttle_kill_notified(true);
+                gcs_send_text(MAV_SEVERITY_CRITICAL,
+                        "ACS COMMANDED: killing throttle");
+                acs.set_throttle_kill_notified(true);
             }
     } else {
         acs.set_throttle_kill_notified(false);

@@ -421,7 +421,7 @@ void Plane::compass_save()
 void Plane::acs_check(void) {
     acs.check(AP_ACS::ACS_FlightMode(control_mode), 
             TECS_controller.get_flight_stage(), 
-            channel_throttle->servo_out, failsafe.last_heartbeat_ms,
+            channel_throttle->get_servo_out(), failsafe.last_heartbeat_ms,
             gps.last_fix_time_ms(), geofence_breached(), is_flying());
 
     AP_ACS::FailsafeState current_fs_state = acs.get_current_fs_state();
@@ -433,28 +433,28 @@ void Plane::acs_check(void) {
                 if (control_mode != LOITER) {
                     //send alert to GCS
                     if (current_fs_state == AP_ACS::GPS_SHORT_FS) {
-                        gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("GPS failsafe: LOITER"));
+                        gcs_send_text(MAV_SEVERITY_CRITICAL,"GPS failsafe: LOITER");
                     } 
-                    set_mode(LOITER);
+                    set_mode(LOITER, MODE_REASON_UNKNOWN);
                 }
 
                 if (current_fs_state == AP_ACS::GPS_LONG_FS &&
                         previous_fs_state != AP_ACS::GPS_LONG_FS) {
                     //scream Mayday!
                     printf("previous_fs_state %d \n", previous_fs_state);
-                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("GPS lost killing throttle"));
+                    gcs_send_text(MAV_SEVERITY_CRITICAL, "GPS lost killing throttle");
                 }
                 break;
 
             case AP_ACS::GEOFENCE_SECONDARY_FS:
                 if (previous_fs_state != AP_ACS::GEOFENCE_SECONDARY_FS) {
-                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Geofence breach too long. Killing Throttle"));
+                    gcs_send_text(MAV_SEVERITY_CRITICAL, "Geofence breach too long. Killing Throttle");
                 }
                 break;
 
             case AP_ACS::GPS_RECOVERING_FS:
                 if (control_mode == LOITER) {
-                    set_mode((FlightMode) acs.get_previous_mode());
+                    set_mode((FlightMode) acs.get_previous_mode(), MODE_REASON_UNKNOWN);
                 }
                 break;
 
@@ -462,11 +462,11 @@ void Plane::acs_check(void) {
                 //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::GCS_AUTOLAND_FS) {
                     //try to tell GCS what we're doing (it may not be able to hear us)
-                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("No contact with GCS for too long: auto-landing."));
+                    gcs_send_text(MAV_SEVERITY_CRITICAL,"No contact with GCS for too long: auto-landing.");
 
                     //start landing if not already
                     if (! jump_to_landing_sequence()) {
-                        gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Failed to start emergency land sequence!!"));
+                        gcs_send_text(MAV_SEVERITY_CRITICAL,"Failed to start emergency land sequence!!");
                     }
                 }
                 break;
@@ -474,16 +474,16 @@ void Plane::acs_check(void) {
             case AP_ACS::MOTOR_FS:
                  //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::MOTOR_FS) {
-                    gcs_send_text_P(MAV_SEVERITY_CRITICAL,PSTR("Motor failure detected."));
-                    set_mode(RTL);
+                    gcs_send_text(MAV_SEVERITY_CRITICAL,"Motor failure detected.");
+                    set_mode(RTL, MODE_REASON_UNKNOWN);
                 }
                 break;
 
             case AP_ACS::NO_COMPANION_COMPUTER_FS:
                 //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::NO_COMPANION_COMPUTER_FS) {
-                    set_mode(RTL);
-                    gcs_send_text_P(MAV_SEVERITY_CRITICAL, PSTR("No companion computer"));
+                    set_mode(RTL, MODE_REASON_UNKNOWN);
+                    gcs_send_text(MAV_SEVERITY_CRITICAL, "No companion computer");
                 }
                 break;
 

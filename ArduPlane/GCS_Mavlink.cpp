@@ -1146,7 +1146,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 
                 //log the MAV_CMD_OVERRIDE_GOTO receipt in data flash:
                 char mesg[64];
-                snprintf(mesg, 64, "GOTO T:%d Lat:%d Lon:%d Alt:%d", plane.millis(), plane.next_WP_loc.lat, plane.next_WP_loc.lng, plane.next_WP_loc.alt);
+                snprintf(mesg, 64, "GOTO T:%d Lat:%d Lon:%d Alt:%d", AP_HAL::millis(), plane.next_WP_loc.lat, plane.next_WP_loc.lng, plane.next_WP_loc.alt);
                 plane.DataFlash.Log_Write_Message(mesg);
             }                 
 
