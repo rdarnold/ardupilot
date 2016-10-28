@@ -1151,7 +1151,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
             }                 
 
             break;
-
+        
         case MAV_CMD_NAV_LOITER_UNLIM:
             plane.set_mode(LOITER, MODE_REASON_GCS_COMMAND);
             result = MAV_RESULT_ACCEPTED;
@@ -1848,12 +1848,12 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         // We keep track of the last time we received a heartbeat from
         // our GCS for failsafe purposes
         if (msg->sysid != plane.g.sysid_my_gcs) break;
-        plane.failsafe.last_heartbeat_ms = AP_HAL::millis();
 #if AP_ACS_USE == TRUE
         //if acs.handle_heartbeat() returns true, then the heartbeat
         //was from a companion computer, not from a GCS
         if (plane.acs.handle_heartbeat(msg)) break;
 #endif
+        plane.failsafe.last_heartbeat_ms = AP_HAL::millis();
         break;
     }
 

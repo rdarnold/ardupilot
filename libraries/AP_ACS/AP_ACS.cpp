@@ -154,7 +154,6 @@ bool AP_ACS::check(ACS_FlightMode mode,
         //GPS is not failing
         //If it was before we have to exit circle mode if we were in it.
         if (_current_fs_state == GPS_LONG_FS 
-
             || _current_fs_state == GPS_SHORT_FS 
             || _current_fs_state == GPS_RECOVERING_FS) {
             
@@ -263,7 +262,6 @@ bool AP_ACS::check(ACS_FlightMode mode,
 
     return true;
 }
-
 
 #if AP_AHRS_NAVEKF_AVAILABLE
 void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_channel_t chan, DataFlash_Class &df, bool is_flying) {
