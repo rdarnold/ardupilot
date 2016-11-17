@@ -101,6 +101,10 @@
 #include "AP_Rally.h"           // Rally point library
 #include "AP_Arming.h"
 
+#if AP_ACS_USE == TRUE
+#include <AP_ACS/AP_ACS.h>
+#endif
+
 // libraries which are dependent on #defines in defines.h and/or config.h
 #if SPRAYER == ENABLED
 #include <AC_Sprayer/AC_Sprayer.h>         // crop sprayer library
@@ -522,6 +526,10 @@ private:
 
     // handle repeated servo and relay events
     AP_ServoRelayEvents ServoRelayEvents;
+
+#if AP_ACS_USE == TRUE
+    AP_ACS acs;
+#endif //AP_ACS_USE
 
     // Reference to the camera object (it uses the relay object inside it)
 #if CAMERA == ENABLED

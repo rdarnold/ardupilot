@@ -70,6 +70,9 @@ Copter::Copter(void) :
     rtl_loiter_start_time(0),
     auto_trim_counter(0),
     ServoRelayEvents(relay),
+#if AP_ACS_USE == TRUE
+    acs(&battery),
+#endif
 #if CAMERA == ENABLED
     camera(&relay),
 #endif
