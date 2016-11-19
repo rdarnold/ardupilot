@@ -171,6 +171,9 @@ void Copter::failsafe_terrain_set_status(bool data_ok)
 // terrain failsafe action
 void Copter::failsafe_terrain_on_event()
 {
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+    return;
+#endif
     failsafe.terrain = true;
     gcs_send_text(MAV_SEVERITY_CRITICAL,"Failsafe: Terrain data missing");
     Log_Write_Error(ERROR_SUBSYSTEM_FAILSAFE_TERRAIN, ERROR_CODE_FAILSAFE_OCCURRED);

@@ -28,6 +28,10 @@ static struct {
 // should be called at 10hz
 void Copter::ekf_check()
 {
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+    return;
+#endif
+
     // exit immediately if ekf has no origin yet - this assumes the origin can never become unset
     Location temp_loc;
     if (!ahrs.get_origin(temp_loc)) {
