@@ -6,15 +6,12 @@
 
 extern const AP_HAL::HAL& hal;
 
-//HAL is screwed up at the moment: can't use a string in the preprocessor definition..
-//TODO: Revisit the following after 3DR fixes HAL_BOARD_NAME definition
-//
-//#if HAL_BOARD_NAME == "SITL"
-// #include <stdio.h>
-// # define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
-//#else
-// # define Debug(fmt, args ...)
-//#endif
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+#include <stdio.h>
+# define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+#else
+# define Debug(fmt, args ...)
+#endif
 
 // table of user settable parameters
 const AP_Param::GroupInfo AP_ACS::var_info[] = {
