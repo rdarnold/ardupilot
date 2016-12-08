@@ -64,6 +64,11 @@ bool Plane::suppress_throttle(void)
     //TODO: consider juat using the terminate flight code elsewhere in this fil
     //and removing this code.
     if (acs.get_kill_throttle() != 0) {
+        if (! acs.get_throttle_kill_notified()) {
+             gcs_send_text(MAV_SEVERITY_CRITICAL,
+                        "ACS COMMANDED: killing throttle");
+            acs.set_throttle_kill_notified(true);
+        }
         return true;
     }
 #endif
@@ -705,13 +710,13 @@ void Plane::set_servos(void)
     }
 
 #if AP_ACS_USE == TRUE
-    //TODO: consider using afs.should_crash_vehicle() instead.
-    //In an emergency, kill throtttle.  
+    //NOTE: Not using afs.terminate_vehicle() on purpose. In many cases --
+    //e.g. GPS failsafe, motor failsafe -- we want to come back to life
+    //if the plane state gets better and terminate_vehicle can be difficult
+    //to recover from.
+    //If ACS module commands it, kill throtttle.  
     if (acs.get_kill_throttle() != 0) {
-            //Old way:
-            //channel_throttle->servo_out = aparm.throttle_min.get();
-            //New way:
-            afs.terminate_vehicle();
+            channel_throttle->set_radio_out(aparm.throttle_min.get());
             return;
             
             if (! acs.get_throttle_kill_notified()) {
