@@ -1062,13 +1062,13 @@ bool Plane::verify_loiter_heading(bool init)
 
     /*
       Check to see if the the plane is heading toward the land
-      waypoint. We use 20 degrees (+/-10 deg) of margin so that
-      we can handle 200 degrees/second of yaw. Allow turn count
+      waypoint. We use 6 degrees (+/-3 deg) of margin so that
+      we can handle xxx degrees/second of yaw. Allow turn count
       to stop it too to ensure we don't loop around forever in
       case high winds are forcing us beyond 200 deg/sec at this
       particular moment.
     */
-    if (labs(heading_err_cd) <= 1000  ||
+    if (labs(heading_err_cd) <= 300  ||
             loiter.sum_cd > loiter.total_cd) {
         // Want to head in a straight line from _here_ to the next waypoint instead of center of loiter wp
 
