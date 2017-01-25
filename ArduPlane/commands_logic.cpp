@@ -139,8 +139,6 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
         // handled in landing.reset()
 
 #if AP_ACS_USE == TRUE
-        //ensure go around hasn't been set
-        auto_state.commanded_go_around = false;
         plane.acs.set_preland_started(true);
 #endif
         break;

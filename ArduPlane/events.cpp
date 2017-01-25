@@ -163,7 +163,7 @@ void Plane::low_battery_event(void)
             gcs_send_text(MAV_SEVERITY_CRITICAL,"Battery low: auto-landing.");
 
             //start landing if not already (ACS-specific behavior -- land vice RTL)
-            if (! jump_to_landing_sequence()) {
+            if (! mission.jump_to_landing_sequence()) {
                 gcs_send_text(MAV_SEVERITY_CRITICAL,"Failed to start emergency land sequence!!");
             }
         }

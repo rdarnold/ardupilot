@@ -73,7 +73,7 @@ public:
 
     //returns true if everything OK.
     //false if RTL should happen
-    bool check(ACS_FlightMode mode, AP_SpdHgtControl::FlightStage flight_stage,
+    bool check(ACS_FlightMode mode, AP_Vehicle::FixedWing::FlightStage flight_stage,
             int16_t thr_out,
             uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms,
             bool fence_breached, bool is_flying);

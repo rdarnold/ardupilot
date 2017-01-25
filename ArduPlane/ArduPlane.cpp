@@ -421,7 +421,7 @@ void Plane::compass_save()
 void Plane::acs_check(void) {
     acs.check(AP_ACS::ACS_FlightMode(control_mode), 
             TECS_controller.get_flight_stage(), 
-            channel_throttle->get_servo_out(), failsafe.last_heartbeat_ms,
+            abs(throttle_percentage()), failsafe.last_heartbeat_ms,
             gps.last_fix_time_ms(), geofence_breached(), is_flying());
 
     AP_ACS::FailsafeState current_fs_state = acs.get_current_fs_state();
@@ -465,8 +465,10 @@ void Plane::acs_check(void) {
                     gcs_send_text(MAV_SEVERITY_CRITICAL,"No contact with GCS for too long: auto-landing.");
 
                     //start landing if not already
-                    if (! jump_to_landing_sequence()) {
+                    if (! mission.jump_to_landing_sequence()) {
                         gcs_send_text(MAV_SEVERITY_CRITICAL,"Failed to start emergency land sequence!!");
+                    } else {
+                        plane.set_mode(AUTO, MODE_REASON_UNKNOWN); 
                     }
                 }
                 break;

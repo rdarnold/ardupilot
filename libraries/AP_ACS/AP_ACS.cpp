@@ -97,7 +97,7 @@ void AP_ACS::set_throttle_kill_notified(bool tkn) {
 
 // check for failsafe conditions IN PRIORITY ORDER
 bool AP_ACS::check(ACS_FlightMode mode, 
-        AP_SpdHgtControl::FlightStage flight_stage, 
+        AP_Vehicle::FixedWing::FlightStage flight_stage, 
         int16_t thr_out, uint32_t last_heartbeat_ms,
         uint32_t last_gps_fix_ms, bool fence_breached, bool is_flying) {
 
@@ -114,9 +114,9 @@ bool AP_ACS::check(ACS_FlightMode mode,
     //(failsafes triggered near the ground could cause the plane to veer at
     //very low altitude into personnel or property)
 
-    if (flight_stage == AP_SpdHgtControl::FLIGHT_TAKEOFF ||
-        flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH || 
-        flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL) {
+    if (flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_TAKEOFF ||
+        flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_APPROACH || 
+        flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_FINAL) {
         
         //no longer in preland flight phase
         //(Need this line to re-enable battery, GCS, and payload heartbeat
@@ -272,10 +272,10 @@ void AP_ACS::send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs, mavlink_cha
     uint8_t ekf_state = 0; //for dataflash logging
     uint32_t now = AP_HAL::millis();
 
-    if (ahrs.get_NavEKF().healthy()) {
-        ahrs.get_NavEKF().getEulerAngles(eulers);
-        ahrs.get_NavEKF().getVelNED(velNED);
-        ahrs.get_NavEKF().getLLH(loc);
+    if (ahrs.get_NavEKF2().healthy()) {
+        ahrs.get_NavEKF2().getEulerAngles(0, eulers);
+        ahrs.get_NavEKF2().getVelNED(0, velNED);
+        ahrs.get_NavEKF2().getLLH(loc);
         ekf_state = 1;
     } else {
         ahrs.get_rotation_body_to_ned().to_euler(&eulers.x, &eulers.y, &eulers.z);

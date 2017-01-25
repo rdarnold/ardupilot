@@ -73,7 +73,7 @@ public:
     // log data on internal state of the controller. Called at 10Hz
     void log_data(DataFlash_Class &dataflash, uint8_t msgid);
 
-    enum FlightStage get_flight_stage() { return _flight_stage; }
+    enum AP_Vehicle::FixedWing::FlightStage get_flight_stage() { return _flight_stage; }
 
     // return current target airspeed
     float get_target_airspeed(void) const {

@@ -1122,8 +1122,8 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
                 result = MAV_RESULT_FAILED;
 
             //don't let the payload do anything during landing stages
-            } else if (plane.flight_stage == AP_SpdHgtControl::FLIGHT_LAND_APPROACH ||
-                    plane.flight_stage == AP_SpdHgtControl::FLIGHT_LAND_FINAL /* ||
+            } else if (plane.flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_APPROACH ||
+                    plane.flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_FINAL /* ||
                     flight_stage == AP_SpdHgtControl::FLIGHT_LAND_GO_AROUND
                     TODO: Consdier GO_AROUND when it's merged with dev. */) { 
                

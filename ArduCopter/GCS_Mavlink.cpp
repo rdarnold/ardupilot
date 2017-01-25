@@ -520,7 +520,7 @@ bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
                 copter.DataFlash, 
                 //TODO: add is_flyinig() check to copter as it is in plane
                 //ensure we are flying:
-                ( (copter.motors.armed() || copter.ap.auto_armed) &&
+                ( (copter.motors->armed() || copter.ap.auto_armed) &&
                     !copter.ap.land_complete)); 
 #endif
         break;
