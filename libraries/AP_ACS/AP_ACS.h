@@ -75,7 +75,7 @@ public:
     //false if RTL should happen
     bool check(ACS_FlightMode mode, AP_Vehicle::FixedWing::FlightStage flight_stage,
             int16_t thr_out,
-            uint32_t last_heartbeat_ms, uint32_t last_gps_fix_ms,
+            uint32_t last_heartbeat_ms, uint8_t num_gps_sats,
             bool fence_breached, bool is_flying);
 
 #if AP_AHRS_NAVEKF_AVAILABLE
@@ -109,6 +109,7 @@ protected:
     int                 _motor_restart_attempts;
 
     uint32_t            _last_log_time;
+    uint32_t            _last_gps_fix_time_ms;
 };
 
 #endif // AP_ACS_H__

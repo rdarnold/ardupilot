@@ -422,7 +422,7 @@ void Plane::acs_check(void) {
     acs.check(AP_ACS::ACS_FlightMode(control_mode), 
             TECS_controller.get_flight_stage(), 
             abs(throttle_percentage()), failsafe.last_heartbeat_ms,
-            gps.last_fix_time_ms(), geofence_breached(), is_flying());
+            gps.num_sats(), geofence_breached(), is_flying());
 
     AP_ACS::FailsafeState current_fs_state = acs.get_current_fs_state();
     //always ignore failsafes in manual modes

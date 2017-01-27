@@ -19,7 +19,7 @@ const AP_Param::GroupInfo AP_ACS::var_info[] = {
     // @DisplayName: Watch the payload heartbeat
     // @Description: If this setting is not 0 then the plane will RTL if 
     // it doesn't receive heartbeats from the payload companion computer.
-    // @User: Advanced
+    // @User: Advanced_
     AP_GROUPINFO("WATCH_HB",     0, AP_ACS, _watch_heartbeat,    1),
 
     // @Param: KILL_THR
@@ -45,6 +45,7 @@ AP_ACS::AP_ACS(const AP_BattMonitor* batt)
     , _motor_fail_workaround_start_ms(0)
     , _motor_restart_attempts(0)
     , _last_log_time(0)
+    , _last_gps_fix_time_ms(0)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -99,7 +100,7 @@ void AP_ACS::set_throttle_kill_notified(bool tkn) {
 bool AP_ACS::check(ACS_FlightMode mode, 
         AP_Vehicle::FixedWing::FlightStage flight_stage, 
         int16_t thr_out, uint32_t last_heartbeat_ms,
-        uint32_t last_gps_fix_ms, bool fence_breached, bool is_flying) {
+        uint8_t num_gps_sats, bool fence_breached, bool is_flying) {
 
     uint32_t now = AP_HAL::millis();
 
@@ -128,27 +129,10 @@ bool AP_ACS::check(ACS_FlightMode mode,
     }
 
     //always check loss of GPS first
-    if ((now - last_gps_fix_ms) > 20000) {
-        if (_current_fs_state != GPS_LONG_FS) {
-            hal.console->println("20 sec GPS FS");
-        }
-
-        _current_fs_state = GPS_LONG_FS;
-
-        //actually killing throttle is handled in the
-        //get_kill_throttle method
-        //and the Arduplane code (see Attitude.pde)
-        return false;
-    } else if ((now - last_gps_fix_ms) >= 5000) {
-        if (_current_fs_state != GPS_SHORT_FS) {
-            hal.console->println("5 sec GPS FS");
-            _previous_mode = mode;
-        }
-
-        _current_fs_state = GPS_SHORT_FS;
-       return false; 
-    } else {
+    if (num_gps_sats >= 6) {
         //GPS is not failing
+        _last_gps_fix_time_ms = now;
+
         //If it was before we have to exit circle mode if we were in it.
         if (_current_fs_state == GPS_LONG_FS 
             || _current_fs_state == GPS_SHORT_FS 
@@ -160,6 +144,28 @@ bool AP_ACS::check(ACS_FlightMode mode,
                 return false;
             }
         }
+    }
+   
+    if ((now - _last_gps_fix_time_ms) > 20000) {
+        if (_current_fs_state != GPS_LONG_FS) {
+            hal.console->println("20 sec GPS FS");
+        }
+
+        _current_fs_state = GPS_LONG_FS;
+
+        //actually killing throttle is handled in the
+        //get_kill_throttle method
+        //and the Arduplane code (see Attitude.pde)
+        return false;
+    } else if ((now - _last_gps_fix_time_ms) >= 5000) {
+        if (_current_fs_state != GPS_SHORT_FS) {
+            hal.console->println("5 sec GPS FS");
+            _previous_mode = mode;
+        }
+
+        _current_fs_state = GPS_SHORT_FS;
+       return false;
+
     }
 
     //ignore all failsafes except GPS when not flying
