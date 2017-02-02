@@ -1053,10 +1053,13 @@ bool Plane::verify_loiter_heading(bool init)
 
     int32_t heading_err_cd = wrap_180_cd(bearing_cd - heading_cd);
 
+    /*  ACS: Why is this here??  Seems like it could cause unintentially early
+     *  break!
     if (init) {
         loiter.total_cd =  wrap_360_cd(bearing_cd - heading_cd);
         loiter.sum_cd = 0;
     }
+    */
 
     /*
       Check to see if the the plane is heading toward the land
@@ -1066,8 +1069,8 @@ bool Plane::verify_loiter_heading(bool init)
       case high winds are forcing us beyond 200 deg/sec at this
       particular moment.
     */
-    if (labs(heading_err_cd) <= 300  ||
-            loiter.sum_cd > loiter.total_cd) {
+    if (labs(heading_err_cd) <= 300  /* ||
+            loiter.sum_cd > loiter.total_cd */ ) {
         // Want to head in a straight line from _here_ to the next waypoint instead of center of loiter wp
 
         // 0 to xtrack from center of waypoint, 1 to xtrack from tangent exit location
