@@ -441,7 +441,6 @@ void Plane::acs_check(void) {
                 if (current_fs_state == AP_ACS::GPS_LONG_FS &&
                         previous_fs_state != AP_ACS::GPS_LONG_FS) {
                     //scream Mayday!
-                    printf("previous_fs_state %d \n", previous_fs_state);
                     gcs_send_text(MAV_SEVERITY_CRITICAL, "GPS lost killing throttle");
                 }
                 break;
