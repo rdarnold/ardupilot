@@ -33,13 +33,17 @@ bool Plane::auto_takeoff_check(void)
     }
 
     // Check for launch acceleration if set. NOTE: relies on TECS 50Hz processing
+    /*
     if (!is_zero(g.takeoff_throttle_min_accel) &&
         SpdHgt_Controller->get_VXdot() < g.takeoff_throttle_min_accel) {
         goto no_launch;
     }
+    */
 
     // we've reached the acceleration threshold, so start the timer
-    if (!takeoff_state.launchTimerStarted) {
+    if (!takeoff_state.launchTimerStarted &&
+          (is_zero(g.takeoff_throttle_min_accel) ||
+          SpdHgt_Controller->get_VXdot() >= g.takeoff_throttle_min_accel) ) {
         takeoff_state.launchTimerStarted = true;
         takeoff_state.last_tkoff_arm_time = now;
         if (now - takeoff_state.last_report_ms > 2000) {
@@ -47,6 +51,10 @@ bool Plane::auto_takeoff_check(void)
                               (double)SpdHgt_Controller->get_VXdot(), (double)(wait_time_ms*0.001f));
             takeoff_state.last_report_ms = now;
         }
+    }
+
+    if (!takeoff_state.launchTimerStarted) {
+        goto no_launch;
     }
 
     // Only perform velocity check if not timed out
