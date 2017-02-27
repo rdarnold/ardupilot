@@ -313,6 +313,8 @@ public:
         k_param_flight_mode6,
         k_param_simple_modes,
 
+        k_param_acs, //jamming ACS parameter group into 209 slot
+
         //
         // 210: Waypoint data
         //

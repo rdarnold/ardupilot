@@ -888,6 +888,12 @@ const AP_Param::Info Copter::var_info[] = {
     // @Path: Parameters.cpp
     GOBJECT(g2, "",  ParametersG2),
     
+#if AP_ACS_USE == TRUE
+    // @Group: ACS_
+    // @Path: ../libraries/AP_ACS/AP_ACS.cpp
+    GOBJECT(acs,         "ACS_",   AP_ACS),
+#endif
+
     AP_VAREND
 };
 
