@@ -29,10 +29,16 @@ const AP_Param::GroupInfo AP_ACS::var_info[] = {
     AP_GROUPINFO("KILL_THR", 1, AP_ACS, _kill_throttle, 0),
 
 
+    // @Param: ALAND_LIM
+    // @DisplayName: Autoland limit
+    // @Description: The maximum distance in kilometers any failsafe auto-landing points can be from the home point. If an autonomous landing is attempted at a greater distance, the aircraft will RTL rather than autoland.
+    // @User: Advanced
+    AP_GROUPINFO("ALAND_LIM", 2, AP_ACS, _aland_limit_km, 2),
+
     AP_GROUPEND
 };
 
-AP_ACS::AP_ACS(const AP_BattMonitor* batt) 
+AP_ACS::AP_ACS(const AP_BattMonitor* batt, const AP_Mission* miss) 
     : _last_computer_heartbeat_ms(0)
     , _fence_breach_time_ms(0)
     , _current_fs_state(NO_FS)
@@ -46,6 +52,7 @@ AP_ACS::AP_ACS(const AP_BattMonitor* batt)
     , _motor_restart_attempts(0)
     , _last_log_time(0)
     , _last_gps_fix_time_ms(0)
+    , _mission(miss)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -98,7 +105,7 @@ void AP_ACS::set_throttle_kill_notified(bool tkn) {
 
 // check for failsafe conditions IN PRIORITY ORDER
 bool AP_ACS::check(ACS_FlightMode mode, 
-        AP_Vehicle::FixedWing::FlightStage flight_stage, 
+        AP_Vehicle::FixedWing::FlightStage flight_stage, const AP_AHRS& ahrs,
         int16_t thr_out, uint32_t last_heartbeat_ms,
         uint8_t num_gps_sats, bool fence_breached, bool is_flying) {
 
@@ -243,10 +250,37 @@ bool AP_ACS::check(ACS_FlightMode mode,
     //If we haven't had any contact with the GCS for two minutes, then 
     //enter failsafe state
     if (now - last_heartbeat_ms > 120000) {
-        _current_fs_state = GCS_AUTOLAND_FS;
-        return false;
-    }
+        //if land point too far away don't try to go there:
+        uint16_t land_seq_start = 
+            ((AP_Mission*) _mission)->get_landing_sequence_start();
+        float landing_dis = 0.f;
 
+        if (land_seq_start != 0) {
+            struct Location current_loc;
+            ahrs.get_position(current_loc); 
+
+            // Go through mission looking for nearest NAV_LAND command
+            for (uint16_t i = 0; i < _mission->num_commands(); i++) {
+                AP_Mission::Mission_Command tmp;
+                if (! _mission->read_cmd_from_storage(i, tmp)) {
+                    continue;
+                }
+                if (tmp.id == MAV_CMD_NAV_LAND) {
+                    landing_dis = get_distance(tmp.content.location, current_loc);
+                    break; //found land point, no more looping.
+                }
+            }
+        }
+
+        if (landing_dis > _aland_limit_km * 1000.0f) {
+            _current_fs_state = GCS_AUTOLAND_TOO_FAR_FS;
+        } else {
+            _current_fs_state = GCS_AUTOLAND_FS;
+        }
+        return false;
+    } // end of loss of GCS comms handling
+
+    //Check to see if payload computer heartbeat still being received:
     if (_watch_heartbeat != 0 &&
         now - _last_computer_heartbeat_ms > 20000) {
         //edge triggered when companion computer heartbeat lost

@@ -7,6 +7,7 @@
 #include <AP_TECS/AP_TECS.h>
 #include <AP_AHRS/AP_AHRS_NavEKF.h>
 #include <AP_BattMonitor/AP_BattMonitor.h>
+#include <AP_Mission/AP_Mission.h>
 #include <DataFlash/DataFlash.h>
 
 class AP_ACS {
@@ -39,6 +40,7 @@ public:
         BATTERY_VOLT_FS,
         GEOFENCE_SECONDARY_FS,  //fence breach for too long: cut throttle
         GCS_AUTOLAND_FS,
+        GCS_AUTOLAND_TOO_FAR_FS, //Autoland waypoint too far away: RTL instead
         MOTOR_FS,
         NO_FS,
         NO_COMPANION_COMPUTER_FS
@@ -47,7 +49,7 @@ public:
     // for holding parameters
 	static const struct AP_Param::GroupInfo var_info[];
 
-    AP_ACS(const AP_BattMonitor* batt);
+    AP_ACS(const AP_BattMonitor* batt, const AP_Mission* miss);
 
     //returns true if the hearbeat was from a companion computer
     bool handle_heartbeat(mavlink_message_t* msg);
@@ -73,10 +75,11 @@ public:
 
     //returns true if everything OK.
     //false if RTL should happen
-    bool check(ACS_FlightMode mode, AP_Vehicle::FixedWing::FlightStage flight_stage,
-            int16_t thr_out,
-            uint32_t last_heartbeat_ms, uint8_t num_gps_sats,
-            bool fence_breached, bool is_flying);
+    bool check(ACS_FlightMode mode, 
+           AP_Vehicle::FixedWing::FlightStage flight_stage, const AP_AHRS& ahrs,
+           int16_t thr_out,
+           uint32_t last_heartbeat_ms, uint8_t num_gps_sats,
+           bool fence_breached, bool is_flying);
 
 #if AP_AHRS_NAVEKF_AVAILABLE
     void send_position_attitude_to_payload(AP_AHRS_NavEKF &ahrs,
@@ -91,6 +94,7 @@ protected:
     //params
     AP_Int8             _watch_heartbeat;
     AP_Int8             _kill_throttle;
+    AP_Int8             _aland_limit_km;
 
     uint32_t            _last_computer_heartbeat_ms;
     uint32_t            _fence_breach_time_ms;
@@ -110,6 +114,8 @@ protected:
 
     uint32_t            _last_log_time;
     uint32_t            _last_gps_fix_time_ms;
+
+    const AP_Mission*   _mission;
 };
 
 #endif // AP_ACS_H__
