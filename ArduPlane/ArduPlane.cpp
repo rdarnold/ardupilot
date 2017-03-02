@@ -420,7 +420,7 @@ void Plane::compass_save()
  */
 void Plane::acs_check(void) {
     acs.check(AP_ACS::ACS_FlightMode(control_mode), 
-            TECS_controller.get_flight_stage(), 
+            TECS_controller.get_flight_stage(), ahrs, 
             abs(throttle_percentage()), failsafe.last_heartbeat_ms,
             gps.num_sats(), geofence_breached(), is_flying());
 
@@ -469,6 +469,14 @@ void Plane::acs_check(void) {
                     } else {
                         plane.set_mode(AUTO, MODE_REASON_UNKNOWN); 
                     }
+                }
+                break;
+
+            case AP_ACS::GCS_AUTOLAND_TOO_FAR_FS:
+                if (previous_fs_state != AP_ACS::GCS_AUTOLAND_TOO_FAR_FS) {
+                    gcs_send_text(MAV_SEVERITY_CRITICAL, "unable to autoland: land waypoint too far.");
+
+                    set_mode(RTL, MODE_REASON_UNKNOWN);
                 }
                 break;
 
