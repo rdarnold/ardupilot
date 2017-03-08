@@ -103,6 +103,61 @@ void AP_ACS::set_throttle_kill_notified(bool tkn) {
     _thr_kill_notified = tkn;
 }
 
+bool AP_ACS::check(ACS_FlightModeCopter mode, 
+        AP_Vehicle::FixedWing::FlightStage flight_stage, const AP_AHRS& ahrs,
+        int16_t thr_out, uint32_t last_heartbeat_ms,
+        uint8_t num_gps_sats, bool fence_breached, bool is_flying) {
+
+    ACS_FlightMode mapped_mode = ACS_NONE;
+
+    switch (mode) {
+        case CMODE_STABILIZE: case CMODE_ALT_HOLD: case CMODE_DRIFT: 
+            mapped_mode = ACS_MANUAL;
+            break;
+
+        case CMODE_ACRO: case CMODE_SPORT: case CMODE_THROW:
+            mapped_mode = ACS_ACRO;
+            break;
+
+        case CMODE_LOITER: case CMODE_POSHOLD: 
+            mapped_mode = ACS_LOITER;
+            break;
+
+        case CMODE_AUTO: case CMODE_AVOID_ADSB: case CMODE_FLIP: case CMODE_BRAKE:
+            mapped_mode = ACS_AUTO;
+            break;
+
+        case CMODE_GUIDED: case CMODE_GUIDED_NOGPS:
+            mapped_mode = ACS_GUIDED;
+            break;
+
+        case CMODE_RTL: 
+            mapped_mode = ACS_RTL;
+            break;
+
+        case CMODE_CIRCLE:
+            mapped_mode = ACS_CIRCLE;
+            break;
+
+        case CMODE_LAND:
+            mapped_mode = ACS_AUTO;
+            flight_stage = AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_APPROACH;
+            break;
+
+        case CMODE_AUTOTUNE:
+            mapped_mode = ACS_TRAINING;
+            break;
+
+        default:
+            mapped_mode = ACS_NONE;
+            break;
+    }
+
+    return check(mapped_mode, flight_stage, ahrs, thr_out, last_heartbeat_ms,
+            num_gps_sats, fence_breached, is_flying);
+
+}
+
 // check for failsafe conditions IN PRIORITY ORDER
 bool AP_ACS::check(ACS_FlightMode mode, 
         AP_Vehicle::FixedWing::FlightStage flight_stage, const AP_AHRS& ahrs,

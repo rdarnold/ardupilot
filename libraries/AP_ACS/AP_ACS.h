@@ -31,6 +31,28 @@ public:
         ACS_INITIALISING  = 16
     } ACS_FlightMode;
 
+    typedef enum ACS_FlightModeCopter {
+        CMODE_NONE          = -1,
+        CMODE_STABILIZE     = 0,
+        CMODE_ACRO          = 1,
+        CMODE_ALT_HOLD      = 2,
+        CMODE_AUTO          = 3,
+        CMODE_GUIDED        = 4,
+        CMODE_LOITER        = 5,
+        CMODE_RTL           = 6,
+        CMODE_CIRCLE        = 7,
+        CMODE_LAND          = 9,
+        CMODE_DRIFT         = 11,
+        CMODE_SPORT         = 13,
+        CMODE_FLIP          = 14,
+        CMODE_AUTOTUNE      = 15,
+        CMODE_POSHOLD       = 16,
+        CMODE_BRAKE         = 17,
+        CMODE_THROW         = 18,
+        CMODE_AVOID_ADSB    = 19,
+        CMODE_GUIDED_NOGPS  = 20
+    } ACS_FlightModeCopter;
+
     typedef enum FailsafeState {
         GPS_LONG_FS = 0,
         GPS_SHORT_FS,
@@ -76,6 +98,12 @@ public:
     //returns true if everything OK.
     //false if RTL should happen
     bool check(ACS_FlightMode mode, 
+           AP_Vehicle::FixedWing::FlightStage flight_stage, const AP_AHRS& ahrs,
+           int16_t thr_out,
+           uint32_t last_heartbeat_ms, uint8_t num_gps_sats,
+           bool fence_breached, bool is_flying);
+
+    bool check(ACS_FlightModeCopter mode, 
            AP_Vehicle::FixedWing::FlightStage flight_stage, const AP_AHRS& ahrs,
            int16_t thr_out,
            uint32_t last_heartbeat_ms, uint8_t num_gps_sats,
