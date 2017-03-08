@@ -155,6 +155,9 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #ifdef USERHOOK_SUPERSLOWLOOP
     SCHED_TASK(userhook_SuperSlowLoop, 1,   75),
 #endif
+#if AP_ACS_USE == TRUE
+    SCHED_TASK(acs_check,              5,   1000),
+#endif 
     SCHED_TASK(button_update,          5,    100),
     SCHED_TASK(stats_update,           1,    100),
 };
@@ -169,6 +172,10 @@ void Copter::setup()
 
     // setup storage layout for copter
     StorageManager::set_layout_copter();
+
+#if AP_ACS_USE == TRUE
+    previous_fs_state = AP_ACS::NO_FS;
+#endif //AP_ACS_USE==TRUE
 
     init_ardupilot();
 
@@ -631,6 +638,80 @@ void Copter::read_AHRS(void)
     // we tell AHRS to skip INS update as we have already done it in fast_loop()
     ahrs.update(true);
 }
+
+#if AP_ACS_USE == TRUE
+void Copter::acs_check(void) {
+    acs.check(AP_ACS::ACS_FlightModeCopter(control_mode), 
+            //Flight mode irrelevant at this time for copters
+            AP_Vehicle::FixedWing::FlightStage::FLIGHT_NORMAL, ahrs, 
+            //No motor failsafe for copters: set to 20 to avoid tripping.
+            20, failsafe.last_heartbeat_ms,
+            //Currently no secondary geofence for copters; false = "no breach"
+            gps.num_sats(), false, 
+            //Currently no "is_flying() function for copters; close enough:
+            ( (copter.motors->armed() || copter.ap.auto_armed) &&
+                    !copter.ap.land_complete));
+
+    AP_ACS::FailsafeState current_fs_state = acs.get_current_fs_state();
+
+    if (acs.get_kill_throttle() != 0) {
+        //just land -- try to save the airframe (don't kill throttle)
+        if (control_mode != LAND) {
+            gcs_send_text(MAV_SEVERITY_CRITICAL,
+                    "ACS commanded kill throttle: landing now");
+            set_mode(LAND, MODE_REASON_UNKNOWN);
+        }
+    }
+
+    //always ignore failsafes in manual modes
+    if (control_mode != STABILIZE && control_mode != ACRO &&
+          control_mode != ALT_HOLD && control_mode != DRIFT &&
+          control_mode != SPORT && control_mode != AUTOTUNE) {
+
+        switch (current_fs_state) {
+            case AP_ACS::GPS_LONG_FS:
+            case AP_ACS::GPS_SHORT_FS:
+                if (control_mode != LOITER) {
+                    //send alert to GCS
+                    if (current_fs_state == AP_ACS::GPS_SHORT_FS) {
+                        gcs_send_text(MAV_SEVERITY_CRITICAL,
+                                "GPS failsafe: LOITER");
+                    } 
+                    set_mode(LOITER, MODE_REASON_UNKNOWN);
+                }
+
+                if (current_fs_state == AP_ACS::GPS_LONG_FS &&
+                        previous_fs_state != AP_ACS::GPS_LONG_FS) {
+                    //scream Mayday!
+                    gcs_send_text(MAV_SEVERITY_CRITICAL,
+                            "GPS lost; landing immdiately");
+                    set_mode(LAND, MODE_REASON_UNKNOWN);
+                }
+                break;
+
+            //if GPS returns, go to RTL mode
+            case AP_ACS::GPS_RECOVERING_FS:
+                set_mode(RTL, MODE_REASON_UNKNOWN);
+                break;
+
+            case AP_ACS::NO_COMPANION_COMPUTER_FS:
+                //the conditional ensures an edge triggered event
+                if (previous_fs_state != AP_ACS::NO_COMPANION_COMPUTER_FS) {
+                    set_mode(RTL, MODE_REASON_UNKNOWN);
+                    gcs_send_text(MAV_SEVERITY_CRITICAL,
+                            "No companion computer");
+                }
+                break;
+
+            default:
+                break;
+        }// switch (current_fs_state)
+
+    } //endif manual modes
+
+    previous_fs_state = current_fs_state;
+}
+#endif
 
 // read baro and rangefinder altitude at 10hz
 void Copter::update_altitude()

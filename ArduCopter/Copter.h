@@ -529,6 +529,7 @@ private:
 
 #if AP_ACS_USE == TRUE
     AP_ACS acs;
+    AP_ACS::FailsafeState previous_fs_state = AP_ACS::NO_FS;
 #endif //AP_ACS_USE
 
     // Reference to the camera object (it uses the relay object inside it)
@@ -763,6 +764,9 @@ private:
     void userhook_MediumLoop();
     void userhook_SlowLoop();
     void userhook_SuperSlowLoop();
+#if AP_ACS_USE == TRUE
+    void acs_check(void);
+#endif
     void update_home_from_EKF();
     void set_home_to_current_location_inflight();
     bool set_home_to_current_location();

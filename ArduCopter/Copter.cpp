@@ -71,7 +71,7 @@ Copter::Copter(void) :
     auto_trim_counter(0),
     ServoRelayEvents(relay),
 #if AP_ACS_USE == TRUE
-    acs(&battery),
+    acs(&battery, &mission),
 #endif
 #if CAMERA == ENABLED
     camera(&relay),
