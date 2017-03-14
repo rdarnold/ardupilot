@@ -480,6 +480,7 @@ void Plane::acs_check(void) {
                 }
                 break;
 
+                /*
             case AP_ACS::MOTOR_FS:
                  //the conditional ensures an edge triggered event
                 if (previous_fs_state != AP_ACS::MOTOR_FS) {
@@ -487,6 +488,7 @@ void Plane::acs_check(void) {
                     set_mode(RTL, MODE_REASON_UNKNOWN);
                 }
                 break;
+                */
 
             case AP_ACS::NO_COMPANION_COMPUTER_FS:
                 //the conditional ensures an edge triggered event
