@@ -47,9 +47,9 @@ AP_ACS::AP_ACS(const AP_BattMonitor* batt, const AP_Mission* miss)
     , _thr_kill_notified(false)
     , _payload_failsafe_already_fired(false)
     , _battery(batt)
-    , _last_good_motor_time_ms(0)
-    , _motor_fail_workaround_start_ms(0)
-    , _motor_restart_attempts(0)
+    //, _last_good_motor_time_ms(0)
+    //, _motor_fail_workaround_start_ms(0)
+    //, _motor_restart_attempts(0)
     , _last_log_time(0)
     , _last_gps_fix_time_ms(0)
     , _mission(miss)
@@ -265,6 +265,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
         return false;
     }
 
+    /*
     if (_battery != NULL) {
         //don't use motor failsafe if battery failsafe is active
         if (AP_Notify::flags.failsafe_battery) {
@@ -300,6 +301,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
             return false;
         }
     } 
+    */
 
     //next check loss of GCS comms (for auto landing)
     //If we haven't had any contact with the GCS for two minutes, then 

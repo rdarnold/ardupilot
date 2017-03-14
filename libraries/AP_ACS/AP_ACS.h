@@ -63,7 +63,7 @@ public:
         GEOFENCE_SECONDARY_FS,  //fence breach for too long: cut throttle
         GCS_AUTOLAND_FS,
         GCS_AUTOLAND_TOO_FAR_FS, //Autoland waypoint too far away: RTL instead
-        MOTOR_FS,
+        //MOTOR_FS,
         NO_FS,
         NO_COMPANION_COMPUTER_FS
     } FailsafeState;
@@ -136,9 +136,9 @@ protected:
     bool                _payload_failsafe_already_fired;
 
     const AP_BattMonitor*     _battery;
-    uint32_t            _last_good_motor_time_ms;
-    uint32_t            _motor_fail_workaround_start_ms;
-    int                 _motor_restart_attempts;
+    //uint32_t            _last_good_motor_time_ms;
+    //uint32_t            _motor_fail_workaround_start_ms;
+    //int                 _motor_restart_attempts;
 
     uint32_t            _last_log_time;
     uint32_t            _last_gps_fix_time_ms;
