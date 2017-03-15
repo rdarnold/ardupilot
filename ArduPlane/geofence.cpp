@@ -223,7 +223,7 @@ bool Plane::geofence_enabled(void)
     if (g.fence_action == FENCE_ACTION_NONE ||
         !geofence_present() ||
 #if AP_ACS_USE == TRUE
-        control_mode == MANUAL ||
+        control_mode == MANUAL || control_mode == FLY_BY_WIRE_A || control_mode == FLY_BY_WIRE_B ||
 #endif
         (g.fence_action != FENCE_ACTION_REPORT && !geofence_state->is_enabled)) {
         // geo-fencing is disabled
