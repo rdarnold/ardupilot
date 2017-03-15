@@ -22,6 +22,13 @@ void Copter::fence_check()
         return;
     }
 
+#if AP_ACS_USE == TRUE
+    //ignore fence in manual modes
+    if (control_mode == STABILIZE || control_mode == ALT_HOLD || control_mode == DRIFT) {
+        return; 
+    }
+#endif
+
     // if there is a new breach take action
     if( new_breaches != AC_FENCE_TYPE_NONE ) {
 
