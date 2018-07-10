@@ -593,8 +593,7 @@ void Plane::check_long_failsafe()
             //Don't trigger the GCS heartbeat failsafe if on the ground
             //or if we've started landing
             if ( (! is_flying()) || acs.preland_started() ||
-                    flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_APPROACH ||
-                    flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_FINAL) {
+                    flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND) {
                 return;
             }
 #endif

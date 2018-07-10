@@ -141,7 +141,7 @@ bool AP_ACS::check(ACS_FlightModeCopter mode,
 
         case CMODE_LAND:
             mapped_mode = ACS_AUTO;
-            flight_stage = AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_APPROACH;
+            flight_stage = AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND;
             break;
 
         case CMODE_AUTOTUNE:
@@ -178,8 +178,7 @@ bool AP_ACS::check(ACS_FlightMode mode,
     //very low altitude into personnel or property)
 
     if (flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_TAKEOFF ||
-        flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_APPROACH || 
-        flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND_FINAL) {
+        flight_stage == AP_Vehicle::FixedWing::FlightStage::FLIGHT_LAND) {
         
         //no longer in preland flight phase
         //(Need this line to re-enable battery, GCS, and payload heartbeat
