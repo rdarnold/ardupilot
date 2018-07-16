@@ -298,12 +298,10 @@ void Aircraft::sync_frame_time(void)
         if (diff < 0) {
             usleep(100000);
         }
-
         last_wall_time_us = now;
         frame_counter = 0;
     }
 }
-
 
 /* add noise based on throttle level (from 0..1) */
 void Aircraft::add_noise(float throttle)

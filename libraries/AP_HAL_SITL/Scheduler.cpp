@@ -11,6 +11,7 @@ using namespace HALSITL;
 
 extern const AP_HAL::HAL& hal;
 
+
 AP_HAL::Proc Scheduler::_failsafe = nullptr;
 volatile bool Scheduler::_timer_suspended = false;
 volatile bool Scheduler::_timer_event_missed = false;
