@@ -38,6 +38,7 @@ extern const AP_HAL::HAL& hal;
 using HALSITL::Scheduler;
 
 namespace SITL {
+
 /*
   parent class for all simulator types
  */

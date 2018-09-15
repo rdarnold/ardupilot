@@ -76,15 +76,15 @@ void Copter::failsafe_gcs_check()
 {
     uint32_t last_gcs_update_ms;
 
-    // return immediately return immediately if the failsafe isn't active and: is disabled or never connected to the GCS
-    if ((!failsafe.gcs) && (g.failsafe_gcs == FS_GCS_DISABLED || failsafe.last_heartbeat_ms == 0)) { 
+    // return immediately if gcs failsafe is disabled, gcs has never been connected to the GCS
+    if ((!failsafe.gcs)&&(g.failsafe_gcs == FS_GCS_DISABLED || failsafe.last_heartbeat_ms == 0)) { 
         return;
     }
 
     // calc time since last gcs update
-    // note: only looks at heartbeat from the device id set by g.sysid_my_gcs
+    // note: this only looks at the heartbeat from the device id set by g.sysid_my_gcs
     last_gcs_update_ms = millis() - failsafe.last_heartbeat_ms;
-       
+
     // check if all is well
     if (last_gcs_update_ms < (uint32_t) g.failsafe_gcs_timeout * 1000) {
         // check for recovery from gcs failsafe

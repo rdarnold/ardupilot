@@ -401,7 +401,7 @@ public:
     AP_Float        fs_batt_mah;                // battery capacity (in mah) below which failsafe will be triggered
 
     AP_Int8         failsafe_gcs;               // ground station failsafe behavior
-    AP_Int8         failsafe_gcs_timeout;      // ground station failsafe timeout
+    AP_Int8         failsafe_gcs_timeout;       // ground station failsafe timeout
     AP_Int16        gps_hdop_good;              // GPS Hdop value at or below this value represent a good position
 
     AP_Int8         compass_enabled;

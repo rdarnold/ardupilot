@@ -1029,11 +1029,11 @@ bool AP_AHRS_NavEKF::healthy(void) const
     case 0:
         return AP_AHRS_DCM::healthy();
 
-    case 2: {   
+    case 2: {
         //ACS mod: These checks have proven too tight -- bypassing
         return true;
 
-        bool ret = _ekf2_started &&  EKF2.healthy();
+        bool ret = _ekf2_started && EKF2.healthy();
         if (!ret) {
             return false;
         }
