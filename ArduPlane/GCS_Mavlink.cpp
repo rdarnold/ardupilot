@@ -1479,7 +1479,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
                 }
             }
             break;
-        
+
         case MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES: {
             if (is_equal(packet.param1,1.0f)) {
                 send_autopilot_version(FIRMWARE_VERSION);

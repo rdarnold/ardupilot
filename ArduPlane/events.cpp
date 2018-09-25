@@ -172,7 +172,6 @@ void Plane::low_battery_event(void)
     	aparm.throttle_cruise.load();
 #endif //AP_ACS_USE == TRUE
     }
-
     failsafe.low_battery = true;
     AP_Notify::flags.failsafe_battery = true;
 }

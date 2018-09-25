@@ -559,6 +559,7 @@ void Plane::calc_nav_roll()
     update_load_factor();
 }
 
+
 bool Plane::allow_reverse_thrust(void)
 {
     // check if we should allow reverse thrust

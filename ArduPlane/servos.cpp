@@ -753,7 +753,6 @@ void Plane::set_servos(void)
         // we are within the ground steering altitude but don't have a
         // dedicated steering channel. Set the rudder to the ground
         // steering output
-        //
         steering_control.rudder = steering_control.steering;
     }
     SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, steering_control.rudder);
