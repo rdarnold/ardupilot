@@ -184,15 +184,18 @@ bool Copter::guided_set_destination(const Vector3f& destination, bool use_yaw, f
         guided_pos_control_start();
     }
 
-#if AC_FENCE == ENABLED
-    // reject destination if outside the fence
-    Location_Class dest_loc(destination);
-    if (!fence.check_destination_within_fence(dest_loc)) {
-        Log_Write_Error(ERROR_SUBSYSTEM_NAVIGATION, ERROR_CODE_DEST_OUTSIDE_FENCE);
-        // failure is propagated to GCS with NAK
-        return false;
-    }
-#endif
+// Commented out the fence check for guided mode
+// Failsafe still works, but not allowing guided points
+// outside the fence interferes with some of the swarming behaviors
+//#if AC_FENCE == ENABLED
+//    // reject destination if outside the fence
+//    Location_Class dest_loc(destination);
+//    if (!fence.check_destination_within_fence(dest_loc)) {
+//        Log_Write_Error(ERROR_SUBSYSTEM_NAVIGATION, ERROR_CODE_DEST_OUTSIDE_FENCE);
+//        // failure is propagated to GCS with NAK
+//        return false;
+//    }
+//#endif
 
     // set yaw state
     guided_set_yaw_state(use_yaw, yaw_cd, use_yaw_rate, yaw_rate_cds, relative_yaw);
@@ -215,15 +218,18 @@ bool Copter::guided_set_destination(const Location_Class& dest_loc, bool use_yaw
         guided_pos_control_start();
     }
 
-#if AC_FENCE == ENABLED
-    // reject destination outside the fence.
-    // Note: there is a danger that a target specified as a terrain altitude might not be checked if the conversion to alt-above-home fails
-    if (!fence.check_destination_within_fence(dest_loc)) {
-        Log_Write_Error(ERROR_SUBSYSTEM_NAVIGATION, ERROR_CODE_DEST_OUTSIDE_FENCE);
-        // failure is propagated to GCS with NAK
-        return false;
-    }
-#endif
+// Commented out the fence check for guided mode
+// Failsafe still works, but not allowing guided points
+// outside the fence interferes with some of the swarming behaviors
+//#if AC_FENCE == ENABLED
+//    // reject destination outside the fence.
+//    // Note: there is a danger that a target specified as a terrain altitude might not be checked if the conversion to alt-above-home fails
+//    if (!fence.check_destination_within_fence(dest_loc)) {
+//        Log_Write_Error(ERROR_SUBSYSTEM_NAVIGATION, ERROR_CODE_DEST_OUTSIDE_FENCE);
+//        // failure is propagated to GCS with NAK
+//        return false;
+//    }
+//#endif
 
     if (!wp_nav->set_wp_destination(dest_loc)) {
         // failure to set destination can only be because of missing terrain data
