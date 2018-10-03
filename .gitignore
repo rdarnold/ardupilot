@@ -8,8 +8,8 @@
 /Tools/autotest/param_metadata/apm.pdef.xml
 /Tools/autotest/jsb_sim/fgout.xml
 /Tools/autotest/jsb_sim/rascal_test.xml
-/Tools/autotest/jsbsim_fgout_0.xml
-/Tools/autotest/jsbsim_start_0.xml
+/Tools/autotest/jsbsim_fgout_*.xml
+/Tools/autotest/jsbsim_start_*.xml
 /tmp/*
 *.bin
 *.d
